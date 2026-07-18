@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:get/get_connect/connect.dart';
@@ -53,7 +52,7 @@ class SubscriptionService {
     _userInitiatedPurchase = true; // ✅ user click করেছে
 
     final ProductDetailsResponse response =
-    await _iap.queryProductDetails({productId});
+        await _iap.queryProductDetails({productId});
 
     if (response.error != null) {
       _userInitiatedPurchase = false;
@@ -95,10 +94,9 @@ class SubscriptionService {
               break;
             }
 
-            final token =
-            await SharePrefsHelper.getString(AppConstants.token);
+            final token = await SharePrefsHelper.getString(AppConstants.token);
             final String packageType =
-            purchase.productID == yearlyProductId ? 'yearly' : 'monthly';
+                purchase.productID == yearlyProductId ? 'yearly' : 'monthly';
 
             final connect = GetConnect();
             final response = await connect.post(
@@ -127,8 +125,7 @@ class SubscriptionService {
               await _iap.completePurchase(purchase);
             } else {
               debugPrint('❌ Failed: ${response.statusCode}');
-              onError?.call(
-                  response.body['message'] ?? "Verification failed");
+              onError?.call(response.body['message'] ?? "Verification failed");
             }
             break;
           }

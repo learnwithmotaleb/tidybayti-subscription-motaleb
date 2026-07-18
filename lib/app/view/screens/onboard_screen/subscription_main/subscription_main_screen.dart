@@ -1,9 +1,11 @@
-
+import 'package:tidybayte/app/data/ios_subscriptions/service/in_app_purchase_service.dart';
+import 'package:tidybayte/app/data/platform/platform_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tidybayte/app/core/app_routes/app_routes.dart';
-import 'package:tidybayte/app/data/subscription/subscription_controller.dart';
+
+import 'package:tidybayte/app/data/subscription/subscription_controller.dart' hide IosSubscriptionService;
 import 'package:tidybayte/app/data/subscription/subscription_service.dart';
 import 'package:tidybayte/app/global/helper/responsive_helper.dart';
 import 'package:tidybayte/app/utils/app_colors/app_colors.dart';
@@ -25,40 +27,32 @@ class SubscriptionMainScreen extends StatefulWidget {
   });
 
   @override
-  State<SubscriptionMainScreen> createState() =>
-      _SubscriptionMainScreenState();
+  State<SubscriptionMainScreen> createState() => _SubscriptionMainScreenState();
 }
 
-class _SubscriptionMainScreenState
-    extends State<SubscriptionMainScreen> {
+class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
   static const int _yearlyPlanIndex = 0;
   static const int _monthlyPlanIndex = 1;
-  final SubscriptionController _subController = Get.find<SubscriptionController>();
-
+  final SubscriptionController _subController =
+      Get.find<SubscriptionController>();
 
   List<PackageItem> get listPackages => [
-    PackageItem(
-        text: AppStrings.manageMultipleHouseholds.tr,
-        icon: AppIcons.home),
-    PackageItem(
-        text: AppStrings.addUnlimitedStaff.tr,
-        icon: AppIcons.group),
-    PackageItem(
-        text: AppStrings.assignTrackTasks.tr,
-        icon: AppIcons.assignment),
-    PackageItem(
-        text: AppStrings.guidedCleaningRoutines.tr,
-        icon: AppIcons.clean),
-    PackageItem(
-        text: AppStrings.planHouseholdBudget.tr,
-        icon: AppIcons.calculator),
-    PackageItem(
-        text: AppStrings.smartShoppingLists.tr,
-        icon: AppIcons.listShopping),
-    PackageItem(
-        text: AppStrings.saveFavoriteRecipes.tr,
-        icon: AppIcons.recipe),
-  ];
+        PackageItem(
+            text: AppStrings.manageMultipleHouseholds.tr, icon: AppIcons.home),
+        PackageItem(
+            text: AppStrings.addUnlimitedStaff.tr, icon: AppIcons.group),
+        PackageItem(
+            text: AppStrings.assignTrackTasks.tr, icon: AppIcons.assignment),
+        PackageItem(
+            text: AppStrings.guidedCleaningRoutines.tr, icon: AppIcons.clean),
+        PackageItem(
+            text: AppStrings.planHouseholdBudget.tr, icon: AppIcons.calculator),
+        PackageItem(
+            text: AppStrings.smartShoppingLists.tr,
+            icon: AppIcons.listShopping),
+        PackageItem(
+            text: AppStrings.saveFavoriteRecipes.tr, icon: AppIcons.recipe),
+      ];
 
   int selectedPlanIndex = _yearlyPlanIndex;
   late final Worker _purchaseWorker;
@@ -86,9 +80,13 @@ class _SubscriptionMainScreenState
     if (!_subController.isPurchased.value) return;
 
     final productId = _subController.activeProductId.value;
-    final newIndex = productId == SubscriptionService.monthlyProductId
-        ? _monthlyPlanIndex
-        : _yearlyPlanIndex;
+    // Use platform-specific monthly product ID for comparison
+    final String monthlyId = PlatformHelper.isIOS
+        ? IosSubscriptionService.monthlyProductId
+        : SubscriptionService.monthlyProductId;
+
+    final newIndex =
+        productId == monthlyId ? _monthlyPlanIndex : _yearlyPlanIndex;
 
     if (selectedPlanIndex != newIndex) {
       setState(() => selectedPlanIndex = newIndex);
@@ -100,17 +98,19 @@ class _SubscriptionMainScreenState
   }
 
   bool _isYearlyActive(String activeProductId) {
-    return activeProductId == SubscriptionService.yearlyProductId;
+    return PlatformHelper.isIOS
+        ? activeProductId == IosSubscriptionService.yearlyProductId
+        : activeProductId == SubscriptionService.yearlyProductId;
   }
 
   bool _isMonthlyActive(String activeProductId) {
-    return activeProductId == SubscriptionService.monthlyProductId;
+    return PlatformHelper.isIOS
+        ? activeProductId == IosSubscriptionService.monthlyProductId
+        : activeProductId == SubscriptionService.monthlyProductId;
   }
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SingleChildScrollView(
@@ -132,14 +132,18 @@ class _SubscriptionMainScreenState
                     )
                   else
                     const SizedBox.shrink(),
-
                   Obx(() {
-                    if (!_subController.isPurchased.value) return const SizedBox.shrink();
+                    if (!_subController.isPurchased.value)
+                      return const SizedBox.shrink();
                     return GestureDetector(
                       onTap: () => Get.defaultDialog(
                         title: 'Cancel Subscription',
-                        middleText: 'Continue Google Play Store ?',
-                        textConfirm: 'Go to Play Store',
+                        middleText: PlatformHelper.isIOS
+                            ? 'Continue to Apple Subscriptions?'
+                            : 'Continue to Google Play Store?',
+                        textConfirm: PlatformHelper.isIOS
+                            ? 'Go to App Store'
+                            : 'Go to Play Store',
                         textCancel: 'Back',
                         confirmTextColor: Colors.white,
                         buttonColor: AppColors.buttonRed,
@@ -170,8 +174,6 @@ class _SubscriptionMainScreenState
                       ),
                     );
                   }),
-
-
                 ],
               ),
 
@@ -273,46 +275,16 @@ class _SubscriptionMainScreenState
                 padding: EdgeInsets.symmetric(
                   horizontal: ResponsiveHelper.padding(28),
                 ),
-
-
                 child: Column(
                   children: [
-                    // Obx(() {
-                    //   final isLoading = _subController.isLoading.value;
-                    //   final isPurchased = _subController.isPurchased.value;
-                    //
-                    //   return CustomButton(
-                    //     onTap: () {
-                    //
-                    //
-                    //     //  _subController.testSubscriptionApi();
-                    //
-                    //       if (isLoading || isPurchased) return;
-                    //
-                    //       _subController.subscribe(
-                    //         selectedPlanIndex == _yearlyPlanIndex,
-                    //       );
-                    //     },
-                    //     fillColor:  AppColors.buttonRed,
-                    //     title: isLoading
-                    //         ? 'Loading...'
-                    //         : isPurchased
-                    //             ? AppStrings.subscriptionActive.tr
-                    //             : AppStrings.subscribeNow.tr,
-                    //     textColor: Colors.white,
-                    //     fontSize: ResponsiveHelper.fontSize(26),
-                    //     radius: ResponsiveHelper.borderRadius(16),
-                    //   );
-                    // }),
-
-
+                    // ── Subscribe button ──────────────────────────────────
                     Obx(() {
                       final isLoading = _subController.isLoading.value;
                       final isPurchased = _subController.isPurchased.value;
 
                       return CustomButton(
                         onTap: () {
-                          if (isLoading || isPurchased) return; // ✅ double tap + purchased guard
+                          if (isLoading || isPurchased) return;
                           _subController.subscribe(
                             selectedPlanIndex == _yearlyPlanIndex,
                           );
@@ -321,19 +293,69 @@ class _SubscriptionMainScreenState
                         title: isLoading
                             ? 'Loading...'
                             : isPurchased
-                            ? AppStrings.subscriptionActive.tr
-                            : AppStrings.subscribeNow.tr,
+                                ? AppStrings.subscriptionActive.tr
+                                : AppStrings.subscribeNow.tr,
                         textColor: Colors.white,
                         fontSize: ResponsiveHelper.fontSize(26),
                         radius: ResponsiveHelper.borderRadius(16),
                       );
                     }),
+
+                    SizedBox(height: ResponsiveHelper.spacing(12)),
+
+                    // ── Restore Purchases (iOS App Store requirement) ─────
+                    if (PlatformHelper.isIOS)
+                      Obx(() {
+                        final isLoading = _subController.isLoading.value;
+                        return GestureDetector(
+                          onTap: isLoading
+                              ? null
+                              : () => _subController.restorePurchases(),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: ResponsiveHelper.spacing(8),
+                            ),
+                            child: Text(
+                              'Restore Purchases',
+                              style: TextStyle(
+                                color:
+                                    isLoading ? Colors.grey : AppColors.black,
+                                fontSize: ResponsiveHelper.fontSize(16),
+                                fontWeight: FontWeight.w500,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+
+                    SizedBox(height: ResponsiveHelper.spacing(12)),
+
+                    // ── Legal disclaimer ──────────────────────────────────
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.padding(8),
+                      ),
+                      child: Text(
+                        PlatformHelper.isIOS
+                            ? 'Payment will be charged to your Apple Account at confirmation of purchase. '
+                                'The subscription automatically renews unless canceled at least 24 hours '
+                                'before the end of the current period. You can manage and cancel your '
+                                'subscriptions in your App Store account settings.'
+                            : 'Payment will be charged to your Google Account at confirmation of purchase. '
+                                'The subscription automatically renews unless canceled before the renewal date.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: ResponsiveHelper.fontSize(12),
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+
                     SizedBox(height: ResponsiveHelper.spacing(16)),
-
-
                   ],
                 ),
-
               ),
 
               SizedBox(height: ResponsiveHelper.spacing(18)),
@@ -343,7 +365,8 @@ class _SubscriptionMainScreenState
       ),
     );
   }
-///if active
+
+  ///if active
   Widget _buildActiveSubscriptionBanner() {
     return Container(
       width: double.infinity,
@@ -405,7 +428,8 @@ class _SubscriptionMainScreenState
           vertical: ResponsiveHelper.spacing(8),
         ),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(16)),
+          borderRadius:
+              BorderRadius.circular(ResponsiveHelper.borderRadius(16)),
           border: Border.all(
             color: borderColor,
             width: isSelected || isActivePlan ? 2 : 1,
@@ -444,9 +468,7 @@ class _SubscriptionMainScreenState
                 ),
               ],
             ),
-
             const Spacer(),
-
             if (isActivePlan)
               _buildActivePlanBadge()
             else if (isFeatured)

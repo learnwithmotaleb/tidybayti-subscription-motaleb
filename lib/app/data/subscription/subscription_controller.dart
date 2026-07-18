@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:get/get.dart';
-import 'package:tidybayte/app/data/ios_subscriptions/service/in_app_purchase_service.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:tidybayte/app/data/subscription/subscription_service.dart';
 import 'package:tidybayte/app/global/helper/shared_prefe/shared_prefe.dart';
 import '../../core/app_routes/app_routes.dart';
@@ -93,8 +93,8 @@ class SubscriptionController extends GetxController {
             false;
     if (cachedSubscribed) {
       isPurchased.value = true;
-      activeProductId.value =
-          await SharePrefsHelper.getString(SharedPreferenceValue.activeProductId);
+      activeProductId.value = await SharePrefsHelper.getString(
+          SharedPreferenceValue.activeProductId) ?? '';
     }
 
     isLoading.value = true;
@@ -126,8 +126,7 @@ class SubscriptionController extends GetxController {
   Future<void> subscribe(bool isYearly) async {
     if (isLoading.value || isPurchased.value) return;
 
-    final String productId =
-        isYearly ? _yearlyProductId : _monthlyProductId;
+    final String productId = isYearly ? _yearlyProductId : _monthlyProductId;
 
     if (_useMock) {
       isLoading.value = true;
@@ -220,5 +219,19 @@ class SubscriptionController extends GetxController {
     errorMessage.value = error;
     isLoading.value = false;
     Get.snackbar('Purchase Failed', error);
+  }
+}
+
+class IosSubscriptionService extends SubscriptionService {
+  static const String yearlyProductId = 'premium_yearly';
+  static const String monthlyProductId = 'premium_monthly';
+
+  IosSubscriptionService({
+    super.onPurchaseUpdated,
+    super.onError,
+  });
+
+  Future<void> restorePurchases() async {
+    await InAppPurchase.instance.restorePurchases();
   }
 }

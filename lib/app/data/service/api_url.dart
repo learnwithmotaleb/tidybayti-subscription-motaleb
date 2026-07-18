@@ -131,4 +131,8 @@ class ApiUrl {
   static const employeeGroceryPending = "$baseUrl/task/get-my-grocery?status=pending";
   static const subscription = "$baseUrl/payment/google-play/verify-subscription";
   static const iosSubscription = "$baseUrl/payment/apple/verify-subscription";
+
+  /// Silent subscription status refresh — reuses the profile endpoint which
+  /// already returns `isSubscribed` and `productId` fields.
+  static const subscriptionStatus = "$baseUrl/user/profile";
 }

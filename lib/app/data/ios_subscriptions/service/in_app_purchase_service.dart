@@ -1,7 +1,5 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
+import 'dart:async';
 import 'package:get/get_connect/connect.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:tidybayte/app/data/service/api_url.dart';
@@ -114,8 +112,7 @@ class IosSubscriptionService {
 
   Future<void> _onPurchaseUpdate(List<PurchaseDetails> purchases) async {
     for (final PurchaseDetails purchase in purchases) {
-      debugPrint(
-          '🛒 [iOS IAP] ${purchase.productID} | ${purchase.status}');
+      debugPrint('🛒 [iOS IAP] ${purchase.productID} | ${purchase.status}');
 
       switch (purchase.status) {
         case PurchaseStatus.purchased:
@@ -123,8 +120,7 @@ class IosSubscriptionService {
             if (!_userInitiatedPurchase) {
               // Automatic delivery on app start — acknowledge but don't
               // call backend again to avoid duplicate billing records.
-              debugPrint(
-                  '⚠️ [iOS IAP] Not user-initiated — skipping API call');
+              debugPrint('⚠️ [iOS IAP] Not user-initiated — skipping API call');
               if (purchase.pendingCompletePurchase) {
                 await _iap.completePurchase(purchase);
               }
@@ -160,8 +156,7 @@ class IosSubscriptionService {
             if (receiptData.isNotEmpty) {
               // Verify restored purchase with backend so entitlement is
               // refreshed even if the user reinstalls the app.
-              await _verifyAndComplete(purchase, receiptData,
-                  isRestore: true);
+              await _verifyAndComplete(purchase, receiptData, isRestore: true);
             } else {
               if (purchase.pendingCompletePurchase) {
                 await _iap.completePurchase(purchase);
@@ -173,10 +168,8 @@ class IosSubscriptionService {
 
         case PurchaseStatus.error:
           _userInitiatedPurchase = false;
-          debugPrint(
-              '❌ [iOS IAP] Error: ${purchase.error?.message}');
-          onError?.call(
-              purchase.error?.message ?? 'Purchase failed');
+          debugPrint('❌ [iOS IAP] Error: ${purchase.error?.message}');
+          onError?.call(purchase.error?.message ?? 'Purchase failed');
           if (purchase.pendingCompletePurchase) {
             await _iap.completePurchase(purchase);
           }
@@ -205,8 +198,7 @@ class IosSubscriptionService {
     bool isRestore = false,
   }) async {
     try {
-      final String token =
-          await SharePrefsHelper.getString(AppConstants.token);
+      final String token = await SharePrefsHelper.getString(AppConstants.token);
 
       final String packageType =
           purchase.productID == yearlyProductId ? 'yearly' : 'monthly';
@@ -223,14 +215,15 @@ class IosSubscriptionService {
           'platform': 'ios',
         },
         headers: {
-          HttpHeaders.authorizationHeader: 'Bearer $token',
-          HttpHeaders.contentTypeHeader: 'application/json',
-          HttpHeaders.acceptHeader: 'application/json',
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('✅ [iOS IAP] ${isRestore ? "Restore" : "Purchase"} verified');
+        debugPrint(
+            '✅ [iOS IAP] ${isRestore ? "Restore" : "Purchase"} verified');
 
         await SharePrefsHelper.setBool(
             SharedPreferenceValue.isSubscribed, true);

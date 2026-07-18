@@ -13,7 +13,7 @@ import 'app/global/language/language_transalator.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
- // GoogleFonts.config.allowRuntimeFetching = false;
+  // GoogleFonts.config.allowRuntimeFetching = false;
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 

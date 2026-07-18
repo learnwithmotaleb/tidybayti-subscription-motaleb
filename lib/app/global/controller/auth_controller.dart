@@ -97,9 +97,10 @@ class AuthController extends GetxController {
       SharePrefsHelper.setString(
           AppConstants.token, response.body['data']["accessToken"]);
 
-      debugPrint('🔑 Token saved after activation: ${response.body['data']["accessToken"]}');
+      debugPrint(
+          '🔑 Token saved after activation: ${response.body['data']["accessToken"]}');
 
-    //  Get.offAllNamed(AppRoutes.freeServiceScreen);
+      //  Get.offAllNamed(AppRoutes.freeServiceScreen);
       Get.offAllNamed(AppRoutes.freeServiceNewScreen);
 
       toastMessage(message: response.body["message"]);
@@ -111,8 +112,6 @@ class AuthController extends GetxController {
     isSignUpOtp.value = false;
     isSignUpOtp.refresh();
   }
-
-
 
   ///==================================✅✅Sign In Method✅✅=======================
 
@@ -132,16 +131,13 @@ class AuthController extends GetxController {
       emailController.clear();
       passwordController.clear();
       Map<String, dynamic> decodedToken =
-      JwtDecoder.decode(response.body["data"]['accessToken']);
+          JwtDecoder.decode(response.body["data"]['accessToken']);
       print("Decoded Token:========================== $decodedToken");
       String role = decodedToken['role'];
 
       print('Role:============================ $role');
-    await  SharePrefsHelper.setString(
+      await SharePrefsHelper.setString(
           AppConstants.token, response.body['data']["accessToken"]);
-
-
-
 
       // if (isRemember.value) {
       //   SharePrefsHelper.setBool(AppConstants.rememberMe, true);
@@ -157,9 +153,7 @@ class AuthController extends GetxController {
 
 // সবসময় role save করো
       if (role == 'USER') {
-     await   SharePrefsHelper.setBool(AppConstants.isOwner, true);
-
-
+        await SharePrefsHelper.setBool(AppConstants.isOwner, true);
 
         // ✅ Login response থেকে subscription check
         final isSubscribed = response.body['data']['isSubscribed'] ?? false;
@@ -168,15 +162,15 @@ class AuthController extends GetxController {
         debugPrint('📦 isSubscribed from API: $isSubscribed');
         debugPrint('📦 activeProductId from API: $activeProductId');
 
-        await SharePrefsHelper.setBool(SharedPreferenceValue.isSubscribed, isSubscribed);
-        await SharePrefsHelper.setString(SharedPreferenceValue.activeProductId, activeProductId);
+        await SharePrefsHelper.setBool(
+            SharedPreferenceValue.isSubscribed, isSubscribed);
+        await SharePrefsHelper.setString(
+            SharedPreferenceValue.activeProductId, activeProductId);
 
-        debugPrint('✅ Subscription cache saved — isSubscribed: $isSubscribed | activeProductId: $activeProductId');
-
-
-
+        debugPrint(
+            '✅ Subscription cache saved — isSubscribed: $isSubscribed | activeProductId: $activeProductId');
       } else if (role == 'EMPLOYEE') {
-      await  SharePrefsHelper.setBool(AppConstants.isOwner, false);
+        await SharePrefsHelper.setBool(AppConstants.isOwner, false);
       }
 
 // Remember Me আলাদাভাবে handle করো
@@ -186,14 +180,12 @@ class AuthController extends GetxController {
         SharePrefsHelper.setBool(AppConstants.rememberMe, false);
       }
 
-
 // Remember Me আলাদাভাবে handle করো
       if (isRemember.value) {
         SharePrefsHelper.setBool(AppConstants.rememberMe, true);
       } else {
         SharePrefsHelper.setBool(AppConstants.rememberMe, false);
       }
-
 
       if (role == 'USER') {
         Get.offAllNamed(AppRoutes.homeScreen);
@@ -264,9 +256,7 @@ class AuthController extends GetxController {
     //   }
     // }
 
-
     else if (response.statusCode == 403 && response.statusText == "Forbidden") {
-
       // ✅ আগে token save করুন
       await SharePrefsHelper.setString(
           AppConstants.token, response.body['data']["token"]);
@@ -277,7 +267,8 @@ class AuthController extends GetxController {
 
       // ✅ NEW: cache ও controller clear করো
       await SharePrefsHelper.setBool(SharedPreferenceValue.isSubscribed, false);
-      await SharePrefsHelper.setString(SharedPreferenceValue.activeProductId, '');
+      await SharePrefsHelper.setString(
+          SharedPreferenceValue.activeProductId, '');
       final subController = Get.find<SubscriptionController>();
       subController.isPurchased.value = false;
       subController.activeProductId.value = '';
@@ -286,22 +277,19 @@ class AuthController extends GetxController {
       if (response.body["data"] != null &&
           response.body["data"]["message"] != null &&
           (response.body["data"]["message"].toString().contains("trial") ||
-              response.body["data"]["message"].toString().contains("Subscription"))) {
-
+              response.body["data"]["message"]
+                  .toString()
+                  .contains("Subscription"))) {
         toastMessage(message: response.body["data"]["message"]);
 
-        Get.toNamed(AppRoutes.subscriptionOnboardingScreen,
-            arguments: {
-              'isOnboarding': false,
-              'isFreeEnd': false,
-            });
+        Get.toNamed(AppRoutes.subscriptionOnboardingScreen, arguments: {
+          'isOnboarding': false,
+          'isFreeEnd': false,
+        });
       } else {
         toastMessage(message: response.body["message"] ?? "Access denied");
       }
-    }
-
-
-    else {
+    } else {
       SharePrefsHelper.setBool(AppConstants.rememberMe, false);
       SharePrefsHelper.setBool(AppConstants.isOwner, false);
       ApiChecker.checkApi(response);
@@ -309,7 +297,6 @@ class AuthController extends GetxController {
     isSignInLoading.value = false;
     isSignInLoading.refresh();
   }
-
 
 // Method to set the role before login
   void setUserRole(String role) {
@@ -382,8 +369,6 @@ class AuthController extends GetxController {
     isForgetOtp.refresh();
   }
 
-
-
   ///==================================✅✅Reset password Method✅✅=======================
 
   RxBool isResetLoading = false.obs;
@@ -416,10 +401,4 @@ class AuthController extends GetxController {
     newPasswordController.clear();
     confirmPasswordController.clear();
   }
-
-
-
-
-
-
 }
