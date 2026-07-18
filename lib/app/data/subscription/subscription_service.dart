@@ -96,7 +96,7 @@ class SubscriptionService {
 
             final token = await SharePrefsHelper.getString(AppConstants.token);
             final String packageType =
-                purchase.productID == yearlyProductId ? 'yearly' : 'monthly';
+                purchase.productID.contains('yearly') ? 'yearly' : 'monthly';
 
             final connect = GetConnect();
             final response = await connect.post(

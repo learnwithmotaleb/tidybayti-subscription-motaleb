@@ -1,11 +1,12 @@
-import 'package:tidybayte/app/data/ios_subscriptions/service/in_app_purchase_service.dart';
+import 'package:tidybayte/app/data/subscription/ios_subscriptions.dart';
 import 'package:tidybayte/app/data/platform/platform_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tidybayte/app/core/app_routes/app_routes.dart';
 
-import 'package:tidybayte/app/data/subscription/subscription_controller.dart' hide IosSubscriptionService;
+import 'package:tidybayte/app/data/subscription/subscription_controller.dart'
+    hide IosSubscriptionService;
 import 'package:tidybayte/app/data/subscription/subscription_service.dart';
 import 'package:tidybayte/app/global/helper/responsive_helper.dart';
 import 'package:tidybayte/app/utils/app_colors/app_colors.dart';
