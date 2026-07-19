@@ -1,4 +1,4 @@
-package com.example.tidybayti
+package com.depaak.tidybayti
 
 import io.flutter.embedding.android.FlutterActivity
 
