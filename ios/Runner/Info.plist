@@ -24,26 +24,40 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+
+	<!-- Camera Permission -->
 	<key>NSCameraUsageDescription</key>
 	<string>Tidy Bayti needs camera access to capture photos.</string>
+
+	<!-- Microphone Permission (Added for App Store requirement) -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Tidy Bayti needs microphone access for audio features.</string>
+
+	<!-- Location Permission -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Tidy Bayti uses your location to provide better services.</string>
+
+	<!-- Photo Permission -->
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Tidy Bayti needs permission to save images.</string>
+
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Tidy Bayti needs photo library access to select images.</string>
+
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -51,5 +65,6 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
 </dict>
 </plist>
