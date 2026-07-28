@@ -24,29 +24,37 @@
     <string>$(FLUTTER_BUILD_NUMBER)</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
-
-    <!-- ✅ NEW — pre-answers Apple's export compliance question at submission -->
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
 
-    <!-- Camera Permission -->
+    <!-- ============ PRIVACY PERMISSIONS ============ -->
     <key>NSCameraUsageDescription</key>
-    <string>Tidy Bayti needs camera access to capture photos.</string>
+    <string>Tidy Bayti needs camera access to take photos for profile pictures and task documentation.</string>
 
-    <!-- Microphone Permission (Added for App Store requirement) -->
     <key>NSMicrophoneUsageDescription</key>
     <string>Tidy Bayti needs microphone access for audio features.</string>
 
-    <!-- Location Permission -->
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Tidy Bayti uses your location to provide better services.</string>
 
-    <!-- Photo Permission -->
     <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>Tidy Bayti needs permission to save images.</string>
+    <string>Tidy Bayti needs permission to save images to your photo library.</string>
 
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>Tidy Bayti needs photo library access to select images.</string>
+    <string>Tidy Bayti needs photo library access to select and upload images.</string>
+
+    <!-- ============ iOS 17+ PRIVACY MANIFEST ============ -->
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>DDA9.1</string>
+            </array>
+        </dict>
+    </array>
 
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
@@ -69,6 +77,5 @@
        <string>UIInterfaceOrientationLandscapeLeft</string>
        <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
-
 </dict>
 </plist>
