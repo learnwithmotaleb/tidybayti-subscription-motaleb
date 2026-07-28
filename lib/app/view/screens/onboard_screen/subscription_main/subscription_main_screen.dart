@@ -5,8 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tidybayte/app/core/app_routes/app_routes.dart';
 
-import 'package:tidybayte/app/data/subscription/subscription_controller.dart'
-    hide IosSubscriptionService;
+import 'package:tidybayte/app/data/subscription/subscription_controller.dart';
 import 'package:tidybayte/app/data/subscription/subscription_service.dart';
 import 'package:tidybayte/app/global/helper/responsive_helper.dart';
 import 'package:tidybayte/app/utils/app_colors/app_colors.dart';
@@ -35,25 +34,25 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
   static const int _yearlyPlanIndex = 0;
   static const int _monthlyPlanIndex = 1;
   final SubscriptionController _subController =
-      Get.find<SubscriptionController>();
+  Get.find<SubscriptionController>();
 
   List<PackageItem> get listPackages => [
-        PackageItem(
-            text: AppStrings.manageMultipleHouseholds.tr, icon: AppIcons.home),
-        PackageItem(
-            text: AppStrings.addUnlimitedStaff.tr, icon: AppIcons.group),
-        PackageItem(
-            text: AppStrings.assignTrackTasks.tr, icon: AppIcons.assignment),
-        PackageItem(
-            text: AppStrings.guidedCleaningRoutines.tr, icon: AppIcons.clean),
-        PackageItem(
-            text: AppStrings.planHouseholdBudget.tr, icon: AppIcons.calculator),
-        PackageItem(
-            text: AppStrings.smartShoppingLists.tr,
-            icon: AppIcons.listShopping),
-        PackageItem(
-            text: AppStrings.saveFavoriteRecipes.tr, icon: AppIcons.recipe),
-      ];
+    PackageItem(
+        text: AppStrings.manageMultipleHouseholds.tr, icon: AppIcons.home),
+    PackageItem(
+        text: AppStrings.addUnlimitedStaff.tr, icon: AppIcons.group),
+    PackageItem(
+        text: AppStrings.assignTrackTasks.tr, icon: AppIcons.assignment),
+    PackageItem(
+        text: AppStrings.guidedCleaningRoutines.tr, icon: AppIcons.clean),
+    PackageItem(
+        text: AppStrings.planHouseholdBudget.tr, icon: AppIcons.calculator),
+    PackageItem(
+        text: AppStrings.smartShoppingLists.tr,
+        icon: AppIcons.listShopping),
+    PackageItem(
+        text: AppStrings.saveFavoriteRecipes.tr, icon: AppIcons.recipe),
+  ];
 
   int selectedPlanIndex = _yearlyPlanIndex;
   late final Worker _purchaseWorker;
@@ -81,13 +80,12 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
     if (!_subController.isPurchased.value) return;
 
     final productId = _subController.activeProductId.value;
-    // Use platform-specific monthly product ID for comparison
     final String monthlyId = PlatformHelper.isIOS
         ? IosSubscriptionService.monthlyProductId
         : SubscriptionService.monthlyProductId;
 
     final newIndex =
-        productId == monthlyId ? _monthlyPlanIndex : _yearlyPlanIndex;
+    productId == monthlyId ? _monthlyPlanIndex : _yearlyPlanIndex;
 
     if (selectedPlanIndex != newIndex) {
       setState(() => selectedPlanIndex = newIndex);
@@ -223,9 +221,12 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
 
               SizedBox(height: ResponsiveHelper.spacing(16)),
 
+              // ✅ UPDATED — prices now come live from the store
               Obx(() {
                 final activeProductId = _subController.activeProductId.value;
                 final isPurchased = _subController.isPurchased.value;
+                final yearlyPrice = _subController.yearlyPrice.value;
+                final monthlyPrice = _subController.monthlyPrice.value;
 
                 return Column(
                   children: [
@@ -233,10 +234,10 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                     _buildPackageCard(
                       context: context,
                       packageTitle: AppStrings.yearly.tr,
-                      price: AppStrings.yearlyPackage.tr,
+                      price: yearlyPrice.isNotEmpty ? yearlyPrice : '...',
                       isSelected: selectedPlanIndex == _yearlyPlanIndex,
                       isActivePlan:
-                          isPurchased && _isYearlyActive(activeProductId),
+                      isPurchased && _isYearlyActive(activeProductId),
                       isFeatured: true,
                       onTap: () => selectPlan(_yearlyPlanIndex),
                     ),
@@ -247,10 +248,10 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                     _buildPackageCard(
                       context: context,
                       packageTitle: AppStrings.monthly.tr,
-                      price: AppStrings.monthlyPackage.tr,
+                      price: monthlyPrice.isNotEmpty ? monthlyPrice : '...',
                       isSelected: selectedPlanIndex == _monthlyPlanIndex,
                       isActivePlan:
-                          isPurchased && _isMonthlyActive(activeProductId),
+                      isPurchased && _isMonthlyActive(activeProductId),
                       onTap: () => selectPlan(_monthlyPlanIndex),
                     ),
                   ],
@@ -294,8 +295,8 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                         title: isLoading
                             ? 'Loading...'
                             : isPurchased
-                                ? AppStrings.subscriptionActive.tr
-                                : AppStrings.subscribeNow.tr,
+                            ? AppStrings.subscriptionActive.tr
+                            : AppStrings.subscribeNow.tr,
                         textColor: Colors.white,
                         fontSize: ResponsiveHelper.fontSize(26),
                         radius: ResponsiveHelper.borderRadius(16),
@@ -320,7 +321,7 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                               'Restore Purchases',
                               style: TextStyle(
                                 color:
-                                    isLoading ? Colors.grey : AppColors.black,
+                                isLoading ? Colors.grey : AppColors.black,
                                 fontSize: ResponsiveHelper.fontSize(16),
                                 fontWeight: FontWeight.w500,
                                 decoration: TextDecoration.underline,
@@ -340,11 +341,11 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                       child: Text(
                         PlatformHelper.isIOS
                             ? 'Payment will be charged to your Apple Account at confirmation of purchase. '
-                                'The subscription automatically renews unless canceled at least 24 hours '
-                                'before the end of the current period. You can manage and cancel your '
-                                'subscriptions in your App Store account settings.'
+                            'The subscription automatically renews unless canceled at least 24 hours '
+                            'before the end of the current period. You can manage and cancel your '
+                            'subscriptions in your App Store account settings.'
                             : 'Payment will be charged to your Google Account at confirmation of purchase. '
-                                'The subscription automatically renews unless canceled before the renewal date.',
+                            'The subscription automatically renews unless canceled before the renewal date.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.grey.shade500,
@@ -416,8 +417,8 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
     final borderColor = isActivePlan
         ? AppColors.black
         : isSelected
-            ? AppColors.buttonRed
-            : AppColors.cardBlueAccent;
+        ? AppColors.buttonRed
+        : AppColors.cardBlueAccent;
 
     return InkWell(
       borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(16)),
@@ -430,7 +431,7 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
         ),
         decoration: BoxDecoration(
           borderRadius:
-              BorderRadius.circular(ResponsiveHelper.borderRadius(16)),
+          BorderRadius.circular(ResponsiveHelper.borderRadius(16)),
           border: Border.all(
             color: borderColor,
             width: isSelected || isActivePlan ? 2 : 1,
@@ -438,8 +439,8 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
           color: isActivePlan
               ? AppColors.primaryBg
               : isSelected
-                  ? AppColors.cardBlue
-                  : AppColors.blue100,
+              ? AppColors.cardBlue
+              : AppColors.blue100,
         ),
         child: Row(
           children: [

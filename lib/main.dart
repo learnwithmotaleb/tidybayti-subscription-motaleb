@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tidybayte/app/core/dependency/dependency_injection.dart';
+import 'package:tidybayte/app/data/subscription/subscription_controller.dart';
 import 'package:tidybayte/app/view/components/device_utils/device_utils.dart';
 import 'app/controller/language_controller/langauge_controller.dart';
 import 'app/core/app_routes/app_routes.dart';
@@ -13,7 +14,6 @@ import 'app/global/language/language_transalator.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // GoogleFonts.config.allowRuntimeFetching = false;
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
@@ -24,9 +24,13 @@ void main() async {
   await languageController.loadLocal();
   await initDependencies();
 
-  runApp(
-    const MyApp(),
-  );
+  // ✅ Ensure SubscriptionController exists before any screen calls
+  // Get.find<SubscriptionController>() — safe even if DependencyInjection
+  // already registers it (Get.put returns the existing instance, doesn't
+  // duplicate it).
+  Get.put(SubscriptionController(), permanent: true);
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -34,14 +38,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final languageController = Get.put(LanguageController());
+    // ✅ Removed duplicate Get.put(LanguageController()) — already
+    // registered in main(), calling it again here was redundant.
+    final languageController = Get.find<LanguageController>();
 
-    // ✅ Initialize ResponsiveHelper here
     ResponsiveHelper.init(context);
-
-    debugPrint(
-        "height====================${MediaQuery.of(context).size.height}");
-    debugPrint("width====================${MediaQuery.of(context).size.width}");
 
     return ScreenUtilInit(
       minTextAdapt: true,

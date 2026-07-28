@@ -24,7 +24,7 @@ class SubscriptionController extends GetxController {
   SubscriptionService? _androidService;
 
   static const bool _useMock =
-      bool.fromEnvironment('USE_MOCK', defaultValue: false);
+  bool.fromEnvironment('USE_MOCK', defaultValue: false);
 
   // -------------------------------------------------------------------------
   // Reactive state
@@ -35,6 +35,10 @@ class SubscriptionController extends GetxController {
   final RxBool isPurchased = false.obs;
   final RxString activeProductId = ''.obs;
   final RxString errorMessage = ''.obs;
+
+  // ✅ NEW — live formatted prices from the store
+  final RxString yearlyPrice = ''.obs;
+  final RxString monthlyPrice = ''.obs;
 
   bool _initialized = false;
 
@@ -62,11 +66,13 @@ class SubscriptionController extends GetxController {
       _iosService = IosSubscriptionService(
         onPurchaseUpdated: _handlePurchaseUpdated,
         onError: _handleError,
+        onProductsLoaded: _syncPrices, // ✅ NEW
       );
     } else {
       _androidService = SubscriptionService(
         onPurchaseUpdated: _handlePurchaseUpdated,
         onError: _handleError,
+        onProductsLoaded: _syncPrices, // ✅ NEW
       );
     }
 
@@ -95,7 +101,7 @@ class SubscriptionController extends GetxController {
     if (cachedSubscribed) {
       isPurchased.value = true;
       activeProductId.value = await SharePrefsHelper.getString(
-              SharedPreferenceValue.activeProductId) ??
+          SharedPreferenceValue.activeProductId) ??
           '';
     }
 
@@ -118,6 +124,20 @@ class SubscriptionController extends GetxController {
       errorMessage.value = e.toString();
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Prices  ✅ NEW
+  // -------------------------------------------------------------------------
+
+  void _syncPrices() {
+    if (Platform.isIOS) {
+      yearlyPrice.value = _iosService?.yearlyPrice ?? '';
+      monthlyPrice.value = _iosService?.monthlyPrice ?? '';
+    } else {
+      yearlyPrice.value = _androidService?.yearlyPrice ?? '';
+      monthlyPrice.value = _androidService?.monthlyPrice ?? '';
     }
   }
 

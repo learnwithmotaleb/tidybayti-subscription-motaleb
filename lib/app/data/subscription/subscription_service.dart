@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 class SubscriptionService {
   static const String yearlyProductId = 'yearly_premium';
   static const String monthlyProductId = 'monthly_premium';
+  static const Set<String> productIds = {yearlyProductId, monthlyProductId};
 
   final InAppPurchase _iap = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
@@ -17,16 +18,37 @@ class SubscriptionService {
   bool _isAvailable = false;
   bool _isPurchased = false;
   String? _activeProductId;
-  bool _userInitiatedPurchase = false; // ✅ NEW
+  bool _userInitiatedPurchase = false;
+
+  // ✅ NEW — live product/price data from Play Store
+  List<ProductDetails> _products = [];
+  List<ProductDetails> get products => _products;
 
   bool get isAvailable => _isAvailable;
   bool get isPurchased => _isPurchased;
   String? get activeProductId => _activeProductId;
 
+  // ✅ NEW — formatted, localized price strings
+  String? get yearlyPrice => _priceFor(yearlyProductId);
+  String? get monthlyPrice => _priceFor(monthlyProductId);
+
+  String? _priceFor(String id) {
+    try {
+      return _products.firstWhere((p) => p.id == id).price;
+    } catch (_) {
+      return null;
+    }
+  }
+
   final void Function(bool isPurchased)? onPurchaseUpdated;
   final void Function(String error)? onError;
+  final void Function()? onProductsLoaded; // ✅ NEW
 
-  SubscriptionService({this.onPurchaseUpdated, this.onError});
+  SubscriptionService({
+    this.onPurchaseUpdated,
+    this.onError,
+    this.onProductsLoaded,
+  });
 
   Future<void> initialize() async {
     _isAvailable = await _iap.isAvailable();
@@ -43,7 +65,34 @@ class SubscriptionService {
       },
     );
 
+    await _fetchProducts(); // ✅ NEW
+
     debugPrint('✅ SubscriptionService initialized');
+  }
+
+  // ✅ NEW
+  Future<void> _fetchProducts() async {
+    final ProductDetailsResponse response =
+        await _iap.queryProductDetails(productIds);
+
+    debugPrint('🔍 [IAP DEBUG] Queried IDs: $productIds');
+    debugPrint(
+        '🔍 [IAP DEBUG] Found: ${response.productDetails.map((p) => "${p.id}=${p.price}").toList()}');
+    debugPrint('🔍 [IAP DEBUG] Not found: ${response.notFoundIDs}');
+    debugPrint('🔍 [IAP DEBUG] Error: ${response.error?.message}');
+
+    if (response.error != null) {
+      debugPrint('❌ Product query error: ${response.error!.message}');
+      onError?.call(response.error!.message);
+      return;
+    }
+
+    if (response.notFoundIDs.isNotEmpty) {
+      debugPrint('⚠️ Products not found: ${response.notFoundIDs}');
+    }
+
+    _products = response.productDetails;
+    onProductsLoaded?.call();
   }
 
   Future<void> buySubscription(String productId) async {
@@ -51,20 +100,31 @@ class SubscriptionService {
 
     _userInitiatedPurchase = true; // ✅ user click করেছে
 
-    final ProductDetailsResponse response =
-        await _iap.queryProductDetails({productId});
-
-    if (response.error != null) {
-      _userInitiatedPurchase = false;
-      throw Exception('Product query error: ${response.error!.message}');
+    // ✅ Reuse already-fetched product if available, else query fresh
+    ProductDetails? product;
+    try {
+      product = _products.firstWhere((p) => p.id == productId);
+    } catch (_) {
+      product = null;
     }
 
-    if (response.productDetails.isEmpty) {
-      _userInitiatedPurchase = false;
-      throw Exception('Product not found: $productId');
+    if (product == null) {
+      final ProductDetailsResponse response =
+          await _iap.queryProductDetails({productId});
+
+      if (response.error != null) {
+        _userInitiatedPurchase = false;
+        throw Exception('Product query error: ${response.error!.message}');
+      }
+
+      if (response.productDetails.isEmpty) {
+        _userInitiatedPurchase = false;
+        throw Exception('Product not found: $productId');
+      }
+
+      product = response.productDetails.first;
     }
 
-    final ProductDetails product = response.productDetails.first;
     final PurchaseParam param = PurchaseParam(productDetails: product);
     await _iap.buyNonConsumable(purchaseParam: param);
   }
@@ -125,7 +185,7 @@ class SubscriptionService {
               await _iap.completePurchase(purchase);
             } else {
               debugPrint('❌ Failed: ${response.statusCode}');
-              onError?.call(response.body['message'] ?? "Verification failed");
+              onError?.call(response.body?['message'] ?? "Verification failed");
             }
             break;
           }
