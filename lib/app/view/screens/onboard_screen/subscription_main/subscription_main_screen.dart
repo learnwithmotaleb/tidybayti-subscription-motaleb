@@ -228,13 +228,18 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                 final yearlyPrice = _subController.yearlyPrice.value;
                 final monthlyPrice = _subController.monthlyPrice.value;
 
+                print('Yearly Price: ${_subController.yearlyPrice.value}');
+                print('Monthly Price: ${_subController.monthlyPrice.value}');
+
                 return Column(
                   children: [
                     /// YEARLY
                     _buildPackageCard(
                       context: context,
                       packageTitle: AppStrings.yearly.tr,
-                      price: yearlyPrice.isNotEmpty ? yearlyPrice : '...',
+                      price: yearlyPrice.trim().isNotEmpty
+                          ? yearlyPrice
+                          : 'BHD 4 / Month',
                       isSelected: selectedPlanIndex == _yearlyPlanIndex,
                       isActivePlan:
                       isPurchased && _isYearlyActive(activeProductId),
@@ -248,7 +253,9 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                     _buildPackageCard(
                       context: context,
                       packageTitle: AppStrings.monthly.tr,
-                      price: monthlyPrice.isNotEmpty ? monthlyPrice : '...',
+                      price: monthlyPrice.trim().isNotEmpty
+                          ? monthlyPrice
+                          : 'BHD 4.99',
                       isSelected: selectedPlanIndex == _monthlyPlanIndex,
                       isActivePlan:
                       isPurchased && _isMonthlyActive(activeProductId),
