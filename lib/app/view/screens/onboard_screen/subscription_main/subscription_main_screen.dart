@@ -127,298 +127,298 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                     children: [
                       SizedBox(height: ResponsiveHelper.spacing(16)),
 
-              /// TOP BAR
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (!widget.isFreeEnd)
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios),
-                    )
-                  else
-                    const SizedBox.shrink(),
-                  Obx(() {
-                    if (!_subController.isPurchased.value)
-                      return const SizedBox.shrink();
-                    return GestureDetector(
-                      onTap: () => Get.defaultDialog(
-                        title: 'Cancel Subscription',
-                        middleText: PlatformHelper.isIOS
-                            ? 'Continue to Apple Subscriptions?'
-                            : 'Continue to Google Play Store?',
-                        textConfirm: PlatformHelper.isIOS
-                            ? 'Go to App Store'
-                            : 'Go to Play Store',
-                        textCancel: 'Back',
-                        confirmTextColor: Colors.white,
-                        buttonColor: AppColors.buttonRed,
-                        onConfirm: () {
-                          Get.back();
-                          _subController.cancelSubscription();
-                        },
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: ResponsiveHelper.padding(18),
-                          vertical: ResponsiveHelper.spacing(4),
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.black,
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveHelper.borderRadius(6),
-                          ),
-                        ),
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: ResponsiveHelper.fontSize(13),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ],
-              ),
-
-              SizedBox(height: ResponsiveHelper.spacing(4)),
-
-              /// TITLE
-              Center(
-                child: CustomText(
-                  text: AppStrings.chooseYourPlan.tr,
-                  color: AppColors.black,
-                  fontWeight: FontWeight.w400,
-                  fontSize: ResponsiveHelper.fontSize(24),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-
-              SizedBox(height: ResponsiveHelper.spacing(8)),
-              Divider(color: Colors.grey.shade300),
-
-              Obx(() {
-                if (!_subController.isPurchased.value) {
-                  return const SizedBox.shrink();
-                }
-
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: ResponsiveHelper.spacing(16),
-                  ),
-                  child: _buildActiveSubscriptionBanner(),
-                );
-              }),
-
-              CustomText(
-                text: AppStrings.plans.tr,
-                color: AppColors.black,
-                fontWeight: FontWeight.w400,
-                fontSize: ResponsiveHelper.fontSize(24),
-              ),
-
-              CustomText(
-                text: AppStrings.sameFeaturesChooseHowYouPay.tr,
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w400,
-                fontSize: ResponsiveHelper.fontSize(20),
-              ),
-
-              SizedBox(height: ResponsiveHelper.spacing(16)),
-
-              // ✅ UPDATED — prices now come live from the store
-              Obx(() {
-                final activeProductId = _subController.activeProductId.value;
-                final isPurchased = _subController.isPurchased.value;
-                final yearlyPrice = _subController.yearlyPrice.value;
-                final monthlyPrice = _subController.monthlyPrice.value;
-
-                return Column(
-                  children: [
-                    /// YEARLY
-                    _buildPackageCard(
-                      context: context,
-                      packageTitle: AppStrings.yearly.tr,
-                      price: yearlyPrice.trim().isNotEmpty
-                          ? yearlyPrice
-                          : 'BHD 4 / Month',
-                      isSelected: selectedPlanIndex == _yearlyPlanIndex,
-                      isActivePlan:
-                      isPurchased && _isYearlyActive(activeProductId),
-                      isFeatured: true,
-                      onTap: () => selectPlan(_yearlyPlanIndex),
-                    ),
-
-                    SizedBox(height: ResponsiveHelper.spacing(20)),
-
-                    /// MONTHLY
-                    _buildPackageCard(
-                      context: context,
-                      packageTitle: AppStrings.monthly.tr,
-                      price: monthlyPrice.trim().isNotEmpty
-                          ? monthlyPrice
-                          : 'BHD 4.99',
-                      isSelected: selectedPlanIndex == _monthlyPlanIndex,
-                      isActivePlan:
-                      isPurchased && _isMonthlyActive(activeProductId),
-                      onTap: () => selectPlan(_monthlyPlanIndex),
-                    ),
-                  ],
-                );
-              }),
-
-              SizedBox(height: ResponsiveHelper.spacing(18)),
-
-              CustomText(
-                text: AppStrings.allPlansInclude.tr,
-                color: AppColors.black,
-                fontWeight: FontWeight.w400,
-                fontSize: ResponsiveHelper.fontSize(20),
-              ),
-
-              SizedBox(height: ResponsiveHelper.spacing(8)),
-
-              _buildPackageList(listPackages: listPackages),
-
-              SizedBox(height: ResponsiveHelper.spacing(16)),
-
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: ResponsiveHelper.padding(28),
-                ),
-                child: Column(
-                  children: [
-                    // ── Subscribe button ──────────────────────────────────
-                    Obx(() {
-                      final isLoading = _subController.isLoading.value;
-                      final isPurchased = _subController.isPurchased.value;
-
-                      return CustomButton(
-                        onTap: () {
-                          if (isLoading || isPurchased) return;
-                          _subController.subscribe(
-                            selectedPlanIndex == _yearlyPlanIndex,
-                          );
-                        },
-                        fillColor: AppColors.buttonRed,
-                        title: isLoading
-                            ? 'Loading...'
-                            : isPurchased
-                            ? AppStrings.subscriptionActive.tr
-                            : AppStrings.subscribeNow.tr,
-                        textColor: Colors.white,
-                        fontSize: ResponsiveHelper.fontSize(26),
-                        radius: ResponsiveHelper.borderRadius(16),
-                      );
-                    }),
-
-                    SizedBox(height: ResponsiveHelper.spacing(12)),
-
-                    // ── Restore Purchases (iOS App Store requirement) ─────
-                    if (PlatformHelper.isIOS)
-                      Obx(() {
-                        final isLoading = _subController.isLoading.value;
-                        return GestureDetector(
-                          onTap: isLoading
-                              ? null
-                              : () => _subController.restorePurchases(),
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: ResponsiveHelper.spacing(8),
-                            ),
-                            child: Text(
-                              'Restore Purchases',
-                              style: TextStyle(
-                                color:
-                                isLoading ? Colors.grey : AppColors.black,
-                                fontSize: ResponsiveHelper.fontSize(16),
-                                fontWeight: FontWeight.w500,
-                                decoration: TextDecoration.underline,
+                      /// TOP BAR
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (!widget.isFreeEnd)
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.arrow_back_ios),
+                            )
+                          else
+                            const SizedBox.shrink(),
+                          Obx(() {
+                            if (!_subController.isPurchased.value)
+                              return const SizedBox.shrink();
+                            return GestureDetector(
+                              onTap: () => Get.defaultDialog(
+                                title: 'Cancel Subscription',
+                                middleText: PlatformHelper.isIOS
+                                    ? 'Continue to Apple Subscriptions?'
+                                    : 'Continue to Google Play Store?',
+                                textConfirm: PlatformHelper.isIOS
+                                    ? 'Go to App Store'
+                                    : 'Go to Play Store',
+                                textCancel: 'Back',
+                                confirmTextColor: Colors.white,
+                                buttonColor: AppColors.buttonRed,
+                                onConfirm: () {
+                                  Get.back();
+                                  _subController.cancelSubscription();
+                                },
                               ),
-                            ),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: ResponsiveHelper.padding(18),
+                                  vertical: ResponsiveHelper.spacing(4),
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.black,
+                                  borderRadius: BorderRadius.circular(
+                                    ResponsiveHelper.borderRadius(6),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: ResponsiveHelper.fontSize(13),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+
+                      SizedBox(height: ResponsiveHelper.spacing(4)),
+
+                      /// TITLE
+                      Center(
+                        child: CustomText(
+                          text: AppStrings.chooseYourPlan.tr,
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w400,
+                          fontSize: ResponsiveHelper.fontSize(24),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+
+                      SizedBox(height: ResponsiveHelper.spacing(8)),
+                      Divider(color: Colors.grey.shade300),
+
+                      Obx(() {
+                        if (!_subController.isPurchased.value) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: ResponsiveHelper.spacing(16),
                           ),
+                          child: _buildActiveSubscriptionBanner(),
                         );
                       }),
 
-                    SizedBox(height: ResponsiveHelper.spacing(12)),
-
-                    // ── Legal links: required for subscriptions ───────
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ResponsiveHelper.padding(8),
+                      CustomText(
+                        text: AppStrings.plans.tr,
+                        color: AppColors.black,
+                        fontWeight: FontWeight.w400,
+                        fontSize: ResponsiveHelper.fontSize(24),
                       ),
-                      child: RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: ResponsiveHelper.fontSize(12),
-                            height: 1.5,
-                          ),
+
+                      CustomText(
+                        text: AppStrings.sameFeaturesChooseHowYouPay.tr,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w400,
+                        fontSize: ResponsiveHelper.fontSize(20),
+                      ),
+
+                      SizedBox(height: ResponsiveHelper.spacing(16)),
+
+                      // ✅ UPDATED — prices now come live from the store
+                      Obx(() {
+                        final activeProductId = _subController.activeProductId.value;
+                        final isPurchased = _subController.isPurchased.value;
+                        final yearlyPrice = _subController.yearlyPrice.value;
+                        final monthlyPrice = _subController.monthlyPrice.value;
+
+                        return Column(
                           children: [
-                            const TextSpan(
-                              text: 'By subscribing, you agree to the ',
+                            /// YEARLY
+                            _buildPackageCard(
+                              context: context,
+                              packageTitle: AppStrings.yearly.tr,
+                              price: yearlyPrice.trim().isNotEmpty
+                                  ? yearlyPrice
+                                  : 'BHD 4 / Month',
+                              isSelected: selectedPlanIndex == _yearlyPlanIndex,
+                              isActivePlan:
+                              isPurchased && _isYearlyActive(activeProductId),
+                              isFeatured: true,
+                              onTap: () => selectPlan(_yearlyPlanIndex),
                             ),
-                            TextSpan(
-                              text: 'Terms of use',
-                              style: const TextStyle(
-                                color: AppColors.black,
-                                decoration: TextDecoration.underline,
-                                fontWeight: FontWeight.w600,
+
+                            SizedBox(height: ResponsiveHelper.spacing(20)),
+
+                            /// MONTHLY
+                            _buildPackageCard(
+                              context: context,
+                              packageTitle: AppStrings.monthly.tr,
+                              price: monthlyPrice.trim().isNotEmpty
+                                  ? monthlyPrice
+                                  : 'BHD 4.99',
+                              isSelected: selectedPlanIndex == _monthlyPlanIndex,
+                              isActivePlan:
+                              isPurchased && _isMonthlyActive(activeProductId),
+                              onTap: () => selectPlan(_monthlyPlanIndex),
+                            ),
+                          ],
+                        );
+                      }),
+
+                      SizedBox(height: ResponsiveHelper.spacing(18)),
+
+                      CustomText(
+                        text: AppStrings.allPlansInclude.tr,
+                        color: AppColors.black,
+                        fontWeight: FontWeight.w400,
+                        fontSize: ResponsiveHelper.fontSize(20),
+                      ),
+
+                      SizedBox(height: ResponsiveHelper.spacing(8)),
+
+                      _buildPackageList(listPackages: listPackages),
+
+                      SizedBox(height: ResponsiveHelper.spacing(16)),
+
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: ResponsiveHelper.padding(28),
+                        ),
+                        child: Column(
+                          children: [
+                            // ── Subscribe button ──────────────────────────────────
+                            Obx(() {
+                              final isLoading = _subController.isLoading.value;
+                              final isPurchased = _subController.isPurchased.value;
+
+                              return CustomButton(
+                                onTap: () {
+                                  if (isLoading || isPurchased) return;
+                                  _subController.subscribe(
+                                    selectedPlanIndex == _yearlyPlanIndex,
+                                  );
+                                },
+                                fillColor: AppColors.buttonRed,
+                                title: isLoading
+                                    ? 'Loading...'
+                                    : isPurchased
+                                    ? AppStrings.subscriptionActive.tr
+                                    : AppStrings.subscribeNow.tr,
+                                textColor: Colors.white,
+                                fontSize: ResponsiveHelper.fontSize(26),
+                                radius: ResponsiveHelper.borderRadius(16),
+                              );
+                            }),
+
+                            SizedBox(height: ResponsiveHelper.spacing(12)),
+
+                            // ── Restore Purchases (iOS App Store requirement) ─────
+                            if (PlatformHelper.isIOS)
+                              Obx(() {
+                                final isLoading = _subController.isLoading.value;
+                                return GestureDetector(
+                                  onTap: isLoading
+                                      ? null
+                                      : () => _subController.restorePurchases(),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: ResponsiveHelper.spacing(8),
+                                    ),
+                                    child: Text(
+                                      'Restore Purchases',
+                                      style: TextStyle(
+                                        color:
+                                        isLoading ? Colors.grey : AppColors.black,
+                                        fontSize: ResponsiveHelper.fontSize(16),
+                                        fontWeight: FontWeight.w500,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+
+                            SizedBox(height: ResponsiveHelper.spacing(12)),
+
+                            // ── Legal links: required for subscriptions ───────
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: ResponsiveHelper.padding(8),
                               ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () => Get.toNamed(
-                                    AppRoutes.termsAndServiceScreen),
-                            ),
-                            const TextSpan(text: ' and '),
-                            TextSpan(
-                              text: 'Privacy Policy',
-                              style: const TextStyle(
-                                color: AppColors.black,
-                                decoration: TextDecoration.underline,
-                                fontWeight: FontWeight.w600,
+                              child: RichText(
+                                textAlign: TextAlign.center,
+                                text: TextSpan(
+                                  style: TextStyle(
+                                    color: Colors.grey.shade600,
+                                    fontSize: ResponsiveHelper.fontSize(12),
+                                    height: 1.5,
+                                  ),
+                                  children: [
+                                    const TextSpan(
+                                      text: 'By subscribing, you agree to the ',
+                                    ),
+                                    TextSpan(
+                                      text: 'Terms of use',
+                                      style: const TextStyle(
+                                        color: AppColors.black,
+                                        decoration: TextDecoration.underline,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () => Get.toNamed(
+                                            AppRoutes.termsAndServiceScreen),
+                                    ),
+                                    const TextSpan(text: ' and '),
+                                    TextSpan(
+                                      text: 'Privacy Policy',
+                                      style: const TextStyle(
+                                        color: AppColors.black,
+                                        decoration: TextDecoration.underline,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () =>
+                                            Get.toNamed(AppRoutes.privacyPolicyScreen),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () =>
-                                    Get.toNamed(AppRoutes.privacyPolicyScreen),
                             ),
+
+                            SizedBox(height: ResponsiveHelper.spacing(10)),
+
+                            // ── Legal disclaimer ──────────────────────────────────
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: ResponsiveHelper.padding(8),
+                              ),
+                              child: Text(
+                                PlatformHelper.isIOS
+                                    ? 'Payment will be charged to your Apple Account at confirmation of purchase. '
+                                    'The subscription automatically renews unless canceled at least 24 hours '
+                                    'before the end of the current period. You can manage and cancel your '
+                                    'subscriptions in your App Store account settings.'
+                                    : 'Payment will be charged to your Google Account at confirmation of purchase. '
+                                    'The subscription automatically renews unless canceled before the renewal date.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.grey.shade500,
+                                  fontSize: ResponsiveHelper.fontSize(12),
+                                  height: 1.5,
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: ResponsiveHelper.spacing(16)),
                           ],
                         ),
                       ),
-                    ),
 
-                    SizedBox(height: ResponsiveHelper.spacing(10)),
-
-                    // ── Legal disclaimer ──────────────────────────────────
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ResponsiveHelper.padding(8),
-                      ),
-                      child: Text(
-                        PlatformHelper.isIOS
-                            ? 'Payment will be charged to your Apple Account at confirmation of purchase. '
-                            'The subscription automatically renews unless canceled at least 24 hours '
-                            'before the end of the current period. You can manage and cancel your '
-                            'subscriptions in your App Store account settings.'
-                            : 'Payment will be charged to your Google Account at confirmation of purchase. '
-                            'The subscription automatically renews unless canceled before the renewal date.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: ResponsiveHelper.fontSize(12),
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: ResponsiveHelper.spacing(16)),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: ResponsiveHelper.spacing(18)),
+                      SizedBox(height: ResponsiveHelper.spacing(18)),
                     ],
                   ),
                 ),
@@ -483,17 +483,20 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
         : AppColors.cardBlueAccent;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(ResponsiveHelper.borderRadius(16)),
+      borderRadius: BorderRadius.circular(
+        ResponsiveHelper.borderRadius(16),
+      ),
       onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(
           horizontal: ResponsiveHelper.padding(18),
-          vertical: ResponsiveHelper.spacing(8),
+          vertical: ResponsiveHelper.spacing(12),
         ),
         decoration: BoxDecoration(
-          borderRadius:
-          BorderRadius.circular(ResponsiveHelper.borderRadius(16)),
+          borderRadius: BorderRadius.circular(
+            ResponsiveHelper.borderRadius(16),
+          ),
           border: Border.all(
             color: borderColor,
             width: isSelected || isActivePlan ? 2 : 1,
@@ -509,11 +512,10 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
           children: [
             Expanded(
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: ResponsiveHelper.spacing(4)),
-                Flexible(
-                  child: CustomText(
+                  CustomText(
                     text: packageTitle,
                     fontWeight: FontWeight.w400,
                     fontSize: ResponsiveHelper.fontSize(24),
@@ -521,73 +523,83 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                     overflow: TextOverflow.visible,
                     maxLines: 2,
                   ),
-                ),
-                CustomText(
-                  text: price,
-                  fontWeight: FontWeight.w500,
-                  fontSize: ResponsiveHelper.fontSize(18),
-                  color: AppColors.black,
-                  overflow: TextOverflow.visible,
-                ),
-                CustomText(
-                  text: isFeatured
-                      ? AppStrings.billedAnnually.tr
-                      : AppStrings.billedMonthly.tr,
-                  fontWeight: FontWeight.w400,
-                  fontSize: ResponsiveHelper.fontSize(18),
-                  color: Colors.grey.shade600,
-                  overflow: TextOverflow.visible,
-                ),
-              ],
+                  SizedBox(height: ResponsiveHelper.spacing(4)),
+                  CustomText(
+                    text: price,
+                    fontWeight: FontWeight.w500,
+                    fontSize: ResponsiveHelper.fontSize(18),
+                    color: AppColors.black,
+                    overflow: TextOverflow.visible,
+                  ),
+                  SizedBox(height: ResponsiveHelper.spacing(2)),
+                  CustomText(
+                    text: isFeatured
+                        ? AppStrings.billedAnnually.tr
+                        : AppStrings.billedMonthly.tr,
+                    fontWeight: FontWeight.w400,
+                    fontSize: ResponsiveHelper.fontSize(16),
+                    color: Colors.grey.shade600,
+                    overflow: TextOverflow.visible,
+                  ),
+                ],
               ),
             ),
-            const Spacer(),
+            SizedBox(width: ResponsiveHelper.spacing(12)),
             if (isActivePlan)
               _buildActivePlanBadge()
             else if (isFeatured)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: ResponsiveHelper.spacing(10),
-                      vertical: ResponsiveHelper.spacing(4),
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.buttonRed,
-                      borderRadius: BorderRadius.circular(
-                        ResponsiveHelper.borderRadius(6),
+              Flexible(
+                fit: FlexFit.loose,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.spacing(10),
+                        vertical: ResponsiveHelper.spacing(4),
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.buttonRed,
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveHelper.borderRadius(6),
+                        ),
+                      ),
+                      child: Text(
+                        AppStrings.bestValue.tr,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: ResponsiveHelper.fontSize(14),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      AppStrings.bestValue.tr,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: ResponsiveHelper.fontSize(14),
+                    SizedBox(height: ResponsiveHelper.spacing(8)),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.spacing(10),
+                        vertical: ResponsiveHelper.spacing(4),
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBlue,
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveHelper.borderRadius(6),
+                        ),
+                      ),
+                      child: Text(
+                        AppStrings.sevenDayFree.tr,
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.visible,
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontSize: ResponsiveHelper.fontSize(12),
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: ResponsiveHelper.spacing(8)),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: ResponsiveHelper.spacing(10),
-                      vertical: ResponsiveHelper.spacing(4),
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardBlue,
-                      borderRadius: BorderRadius.circular(
-                        ResponsiveHelper.borderRadius(6),
-                      ),
-                    ),
-                    child: Text(
-                      AppStrings.sevenDayFree.tr,
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: ResponsiveHelper.fontSize(12),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
           ],
         ),
@@ -655,7 +667,7 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                   fontWeight: FontWeight.w400,
                   fontSize: ResponsiveHelper.fontSize(18),
                   color: AppColors.dark300,
-                  textAlign: TextAlign.left, // 👈 এটা add করুন
+                  textAlign: TextAlign.left,
                 ),
               ),
             ],
