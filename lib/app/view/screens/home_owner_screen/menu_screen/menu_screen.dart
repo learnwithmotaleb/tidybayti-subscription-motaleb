@@ -84,13 +84,13 @@ class MenuScreen extends StatelessWidget {
                         ),
 
                         ///================================myPlan=================
-                        // CustomMenuItem(
-                        //   image: AppIcons.pacages,
-                        //   text: AppStrings.myPlan.tr,
-                        //   onTap: () {
-                        //     Get.toNamed(AppRoutes.myPlanScreen);
-                        //   },
-                        // ),
+                        CustomMenuItem(
+                          image: AppIcons.pacages,
+                          text: AppStrings.myPlan.tr,
+                          onTap: () {
+                            Get.toNamed(AppRoutes.myPlanScreen);
+                          },
+                        ),
 
                         ///================================Settings=================
                         CustomMenuItem(

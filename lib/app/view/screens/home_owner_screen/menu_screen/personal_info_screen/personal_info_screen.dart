@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:tidybayte/app/controller/owner_controller/profile_controller/profile_controller.dart';
 import 'package:tidybayte/app/core/app_routes/app_routes.dart';
 import 'package:tidybayte/app/data/service/api_url.dart';
+import 'package:tidybayte/app/data/subscription/subscription_controller.dart';
 import 'package:tidybayte/app/global/helper/GenerelError/general_error.dart';
 import 'package:tidybayte/app/global/helper/responsive_helper.dart';
 import 'package:tidybayte/app/utils/app_colors/app_colors.dart';
@@ -21,6 +22,8 @@ class PersonalInfoScreen extends StatelessWidget {
   PersonalInfoScreen({super.key});
 
   final ProfileController profileController = Get.find<ProfileController>();
+  final SubscriptionController subController =
+      Get.find<SubscriptionController>();
 
   @override
   Widget build(BuildContext context) {
@@ -140,13 +143,35 @@ class PersonalInfoScreen extends StatelessWidget {
                               fontWeight: FontWeight.w500,
                               fontSize: ResponsiveHelper.fontSize(20),
                             ),
-                             CustomText(
-                              text: 'Free User',
-                              color: AppColors.dark300,
-                              fontWeight: FontWeight.w400,
-                              fontSize:  ResponsiveHelper.fontSize(16),
-                              bottom:  ResponsiveHelper.height(24),
-                            ),
+                             Obx(() {
+                              final isPro = subController.isPurchased.value;
+                              return Container(
+                                margin: EdgeInsets.only(
+                                  bottom: ResponsiveHelper.height(24),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: ResponsiveHelper.spacing(10),
+                                  vertical: ResponsiveHelper.spacing(2),
+                                ),
+                                decoration: isPro
+                                    ? BoxDecoration(
+                                        color: AppColors.buttonRed,
+                                        borderRadius: BorderRadius.circular(
+                                          ResponsiveHelper.borderRadius(20),
+                                        ),
+                                      )
+                                    : null,
+                                child: CustomText(
+                                  text: isPro ? 'Pro User' : 'Free User',
+                                  color: isPro
+                                      ? Colors.white
+                                      : AppColors.dark300,
+                                  fontWeight:
+                                      isPro ? FontWeight.w600 : FontWeight.w400,
+                                  fontSize: ResponsiveHelper.fontSize(16),
+                                ),
+                              );
+                            }),
 
                             /// ========== Personal Details ==========
                             CustomPersonalProfile(
