@@ -273,6 +273,11 @@ class AppStrings {
   static const String myPlan = 'My plan';
   static const String settings = 'Settings';
   static const String logOut = 'Log out';
+  static const String deleteAccount = 'Delete Account';
+  static const String accountDeletionTitle = 'Delete your account';
+  static const String requestAccountDeletion = 'Request account deletion';
+  static const String deleteAccountDescription =
+      'You can permanently delete your account and all associated data directly from here — no need to contact support.';
   static const String contactNo = 'Contact no:';
   static const String editProfile = 'Edit Profile';
   static const String saveAndChange = 'Save & Change';
@@ -522,27 +527,29 @@ class AppStrings {
   static const String deleteRoomMessage =
       'Are you sure you want to delete this room?';
 
-///=================================
-  static const String more="MORE ";
-  static const String control="CONTROL";
-  static const String less="LESS";
-  static const String stress="STRESS";
-  static const String timeForWhat="TIME FOR WHAT MATTERS";
-  static const String homeManagementSimplified="HOME MANAGEMENT. SIMPLIFIED";
-  static const String getStarted="GET STARTED";
-  static const String smartHouseholdManagement="SMART HOUSEHOLD MANAGEMENT";
-  static const String simplifyYourHome="SIMPLIFY YOUR HOME";
-  static const String spaceUpYourLife="SPACE UP YOUR LIFE";
-  static const String smartManagement="SMART MANAGEMENT";
-  static const String timeForWhatMatters="TIME FOR WHAT MATTERS BOARDING";
-  static const String swipeLeft="SWIPE LEFT";
-  static const String continueUpper ="CONTINUE";
-  static const String chooseYourLanguage ="Choose Your Language";
-  static const String chooseYourPlan ="Choose Your Plan";
-///=====================================
+  ///=================================
+  static const String more = "MORE ";
+  static const String control = "CONTROL";
+  static const String less = "LESS";
+  static const String stress = "STRESS";
+  static const String timeForWhat = "TIME FOR WHAT MATTERS";
+  static const String homeManagementSimplified = "HOME MANAGEMENT. SIMPLIFIED";
+  static const String getStarted = "GET STARTED";
+  static const String smartHouseholdManagement = "SMART HOUSEHOLD MANAGEMENT";
+  static const String simplifyYourHome = "SIMPLIFY YOUR HOME";
+  static const String spaceUpYourLife = "SPACE UP YOUR LIFE";
+  static const String smartManagement = "SMART MANAGEMENT";
+  static const String timeForWhatMatters = "TIME FOR WHAT MATTERS BOARDING";
+  static const String swipeLeft = "SWIPE LEFT";
+  static const String continueUpper = "CONTINUE";
+  static const String chooseYourLanguage = "Choose Your Language";
+  static const String chooseYourPlan = "Choose Your Plan";
+
+  ///=====================================
   static const String skip = "skip";
   static const String plans = "plans";
-  static const String sameFeaturesChooseHowYouPay = "Same features. Choose how you pay.";
+  static const String sameFeaturesChooseHowYouPay =
+      "Same features. Choose how you pay.";
   static const String yearly = "yearly";
   static const String bestValue = "Best Value";
   static const String sevenDayFreeTrial = "seven_day_free_trial";
@@ -564,11 +571,9 @@ class AppStrings {
   static const String planHouseholdBudget = "plan_household_budget";
   static const String smartShoppingLists = "smart_shopping_lists";
   static const String saveFavoriteRecipes = "save_favorite_recipes";
-  static const String sevenDayFree ="7-day free trial";
-  static const String sameFeaturesChooseHow ="Same features. Choose how you pay.";
-  static const String tapUploadImage ="Tap to upload profile image *";
-  static const String chooseYourHouse ="Choose Your House";
-
-
-
+  static const String sevenDayFree = "7-day free trial";
+  static const String sameFeaturesChooseHow =
+      "Same features. Choose how you pay.";
+  static const String tapUploadImage = "Tap to upload profile image *";
+  static const String chooseYourHouse = "Choose Your House";
 }

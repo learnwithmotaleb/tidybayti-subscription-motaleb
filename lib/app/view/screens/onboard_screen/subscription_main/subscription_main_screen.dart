@@ -1,7 +1,7 @@
 import 'package:tidybayte/app/data/subscription/ios_subscriptions.dart';
 import 'package:tidybayte/app/data/platform/platform_helper.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tidybayte/app/core/app_routes/app_routes.dart';
 
@@ -112,13 +112,20 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: ResponsiveHelper.symmetric(horizontal: 16, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: ResponsiveHelper.spacing(16)),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxContentWidth = constraints.maxWidth > 720 ? 720.0 : constraints.maxWidth;
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxContentWidth),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(bottom: ResponsiveHelper.spacing(24)),
+                child: Padding(
+                  padding: ResponsiveHelper.symmetric(horizontal: 16, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: ResponsiveHelper.spacing(16)),
 
               /// TOP BAR
               Row(
@@ -227,9 +234,6 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                 final isPurchased = _subController.isPurchased.value;
                 final yearlyPrice = _subController.yearlyPrice.value;
                 final monthlyPrice = _subController.monthlyPrice.value;
-
-                print('Yearly Price: ${_subController.yearlyPrice.value}');
-                print('Monthly Price: ${_subController.monthlyPrice.value}');
 
                 return Column(
                   children: [
@@ -340,6 +344,53 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
 
                     SizedBox(height: ResponsiveHelper.spacing(12)),
 
+                    // ── Legal links: required for subscriptions ───────
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.padding(8),
+                      ),
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: ResponsiveHelper.fontSize(12),
+                            height: 1.5,
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: 'By subscribing, you agree to the ',
+                            ),
+                            TextSpan(
+                              text: 'Terms of use',
+                              style: const TextStyle(
+                                color: AppColors.black,
+                                decoration: TextDecoration.underline,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () => Get.toNamed(
+                                    AppRoutes.termsAndServiceScreen),
+                            ),
+                            const TextSpan(text: ' and '),
+                            TextSpan(
+                              text: 'Privacy Policy',
+                              style: const TextStyle(
+                                color: AppColors.black,
+                                decoration: TextDecoration.underline,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () =>
+                                    Get.toNamed(AppRoutes.privacyPolicyScreen),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: ResponsiveHelper.spacing(10)),
+
                     // ── Legal disclaimer ──────────────────────────────────
                     Padding(
                       padding: EdgeInsets.symmetric(
@@ -368,9 +419,13 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
               ),
 
               SizedBox(height: ResponsiveHelper.spacing(18)),
-            ],
-          ),
-        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -450,22 +505,29 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
               : AppColors.blue100,
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: ResponsiveHelper.spacing(4)),
-                CustomText(
-                  text: packageTitle,
-                  fontWeight: FontWeight.w400,
-                  fontSize: ResponsiveHelper.fontSize(24),
-                  color: AppColors.black,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: ResponsiveHelper.spacing(4)),
+                Flexible(
+                  child: CustomText(
+                    text: packageTitle,
+                    fontWeight: FontWeight.w400,
+                    fontSize: ResponsiveHelper.fontSize(24),
+                    color: AppColors.black,
+                    overflow: TextOverflow.visible,
+                    maxLines: 2,
+                  ),
                 ),
                 CustomText(
                   text: price,
                   fontWeight: FontWeight.w500,
                   fontSize: ResponsiveHelper.fontSize(18),
                   color: AppColors.black,
+                  overflow: TextOverflow.visible,
                 ),
                 CustomText(
                   text: isFeatured
@@ -474,8 +536,10 @@ class _SubscriptionMainScreenState extends State<SubscriptionMainScreen> {
                   fontWeight: FontWeight.w400,
                   fontSize: ResponsiveHelper.fontSize(18),
                   color: Colors.grey.shade600,
+                  overflow: TextOverflow.visible,
                 ),
               ],
+              ),
             ),
             const Spacer(),
             if (isActivePlan)

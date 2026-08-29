@@ -44,7 +44,7 @@ class SettingScreen extends StatelessWidget {
                 ///=============================== Settings Items ========================
                 Expanded(
                   child: ListView(
-                    padding:  ResponsiveHelper.symmetric(horizontal: 20),
+                    padding: ResponsiveHelper.symmetric(horizontal: 20),
                     children: [
                       ///================================changePassword=================
                       CustomMenuItem(
@@ -88,6 +88,15 @@ class SettingScreen extends StatelessWidget {
                         text: AppStrings.termsOfService.tr,
                         onTap: () {
                           Get.toNamed(AppRoutes.termsAndServiceScreen);
+                        },
+                      ),
+
+                      ///================================deleteAccount=================
+                      CustomMenuItem(
+                        image: AppIcons.delete,
+                        text: AppStrings.deleteAccount.tr,
+                        onTap: () {
+                          Get.toNamed(AppRoutes.accountDeletionScreen);
                         },
                       ),
                     ],

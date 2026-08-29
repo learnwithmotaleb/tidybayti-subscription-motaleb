@@ -1,12 +1,10 @@
 class ApiUrl {
-
   ///local==================
   //static const baseUrl = "http://10.10.20.44:8004";
   ///live
   static const baseUrl = "http://3.107.47.75:8004";
   //static const networkUrl = "http://10.10.20.44:8004/";
   static const networkUrl = "http://3.107.47.75:8004/";
-
 
   ///<======================= For Auth part ====================>
   static const register = "$baseUrl/auth/register";
@@ -27,6 +25,10 @@ class ApiUrl {
   static const getEmployee = "$baseUrl/user/get-my-employee";
   static const editEmployee = "$baseUrl/user/edit-employee";
   static const employeeDelete = "$baseUrl/user/delete-employee";
+
+  static const deleteAccount = "$baseUrl/user/delete-account"; //Delete Method
+  //body: {email, password}
+
   static String singleEmployee(String employeeId) =>
       "$baseUrl/user/get-single-employee?userId=$employeeId";
   static String getRoom(String houseId) =>
@@ -36,14 +38,15 @@ class ApiUrl {
   static const addTask = "$baseUrl/task/post-task";
   static const getCompleteTask = "$baseUrl/task/get-my-task?status=completed";
 
+  static const getPendingTask =
+      "$baseUrl/task/get-my-task?status=pending&recurrence=one_time";
 
-  static const getPendingTask = "$baseUrl/task/get-my-task?status=pending&recurrence=one_time";
-
-
-  static const getRecurrenceTask = "$baseUrl/task/get-my-task?recurrence=recurrent";
+  static const getRecurrenceTask =
+      "$baseUrl/task/get-my-task?recurrence=recurrent";
   static const getOneTimeTask = "$baseUrl/task/get-my-task?recurrence=one_time";
 
-  static const getSortTask = "$baseUrl/task/get-my-task?sort=startDateTime&recurrence=one_time";
+  static const getSortTask =
+      "$baseUrl/task/get-my-task?sort=startDateTime&recurrence=one_time";
   static const getEmployeePendingTask =
       "$baseUrl/task/get-employee-specific-current-task?sort=startDateTime&status=pending&recurrence=one_time";
   static const getEmployeeOngoingTask =
@@ -126,10 +129,14 @@ class ApiUrl {
   static const groceryDelete = "$baseUrl/task/delete-grocery";
   static const getMyGrocery = "$baseUrl/task/get-my-grocery";
   //static const getGroceryOngoing = "$baseUrl/task/get-my-grocery?status=ongoing";
-  static const getGroceryOngoing = "$baseUrl/task/get-my-grocery?status=pending";
-  static const groceryComplete ="$baseUrl/task/get-my-grocery?status=completed";
-  static const employeeGroceryPending = "$baseUrl/task/get-my-grocery?status=pending";
-  static const subscription = "$baseUrl/payment/google-play/verify-subscription";
+  static const getGroceryOngoing =
+      "$baseUrl/task/get-my-grocery?status=pending";
+  static const groceryComplete =
+      "$baseUrl/task/get-my-grocery?status=completed";
+  static const employeeGroceryPending =
+      "$baseUrl/task/get-my-grocery?status=pending";
+  static const subscription =
+      "$baseUrl/payment/google-play/verify-subscription";
   static const iosSubscription = "$baseUrl/payment/apple/verify-subscription";
 
   /// Silent subscription status refresh — reuses the profile endpoint which

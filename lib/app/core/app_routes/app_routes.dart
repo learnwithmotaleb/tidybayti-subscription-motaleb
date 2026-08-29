@@ -25,6 +25,7 @@ import 'package:tidybayte/app/view/screens/home_owner_screen/menu_screen/languag
 import 'package:tidybayte/app/view/screens/home_owner_screen/menu_screen/my_plan_screen/my_plan_screen.dart';
 import 'package:tidybayte/app/view/screens/home_owner_screen/menu_screen/personal_info_screen/edit_profile_screen/edit_profile_screen.dart';
 import 'package:tidybayte/app/view/screens/home_owner_screen/menu_screen/personal_info_screen/personal_info_screen.dart';
+import 'package:tidybayte/app/view/screens/home_owner_screen/menu_screen/setting_screen/account_deletion_screen/account_deletion_screen.dart';
 import 'package:tidybayte/app/view/screens/home_owner_screen/menu_screen/setting_screen/change_password_screen/change_password_screen.dart';
 import 'package:tidybayte/app/view/screens/home_owner_screen/menu_screen/setting_screen/faq/faq_screen.dart';
 import 'package:tidybayte/app/view/screens/home_owner_screen/menu_screen/setting_screen/help_where_screen/help_where_screen.dart';
@@ -123,6 +124,7 @@ class AppRoutes {
   static const String changePasswordScreen = "/ChangePasswordScreen";
   static const String termsAndServiceScreen = "/TermsAndServiceScreen";
   static const String privacyPolicyScreen = "/PrivacyPolicyScreen";
+  static const String accountDeletionScreen = "/AccountDeletionScreen";
   static const String helpWhereScreen = "/HelpWhereScreen";
   static const String editProfileScreen = "/EditProfileScreen";
   static const String faqScreen = "/FaqScreen";
@@ -136,9 +138,11 @@ class AppRoutes {
   static const String languageScreen = "/LanguageScreen";
   static const String getStartedScreen = "/GetStartedScreen";
   static const String getStartedLoadingScreen = "/GetStartedLoadingScreen";
- // static const String languageOnboardingScreen = "/LanguageOnboardingScreen";
-  static const String subscriptionOnboardingScreen = "/SubscriptionOnboardingScreen";
-static const String freeServiceNewScreen ="/FreeServiceNewScreen";
+  // static const String languageOnboardingScreen = "/LanguageOnboardingScreen";
+  static const String subscriptionOnboardingScreen =
+      "/SubscriptionOnboardingScreen";
+  static const String freeServiceNewScreen = "/FreeServiceNewScreen";
+
   ///====================GetPage===================
   static List<GetPage> routes = [
     GetPage(
@@ -258,8 +262,9 @@ static const String freeServiceNewScreen ="/FreeServiceNewScreen";
       page: () => const MyRecipeDetails(),
       // customTransition: SlideScaleTransition()
     ),
-    GetPage(name: mySingleTags,
-        page: () => const MySingleTags(),
+    GetPage(
+      name: mySingleTags,
+      page: () => const MySingleTags(),
     ),
     GetPage(
       name: webViewScreen,
@@ -339,6 +344,11 @@ static const String freeServiceNewScreen ="/FreeServiceNewScreen";
       // customTransition: ScaleTransitionEffect(),
     ),
     GetPage(
+      name: accountDeletionScreen,
+      page: () => const AccountDeletionScreen(),
+      // customTransition: ScaleTransitionEffect(),
+    ),
+    GetPage(
       name: helpWhereScreen,
       page: () => const HelpWhereScreen(),
       // customTransition: ScaleTransitionEffect(),
@@ -365,7 +375,9 @@ static const String freeServiceNewScreen ="/FreeServiceNewScreen";
     GetPage(name: employeeEditProfile, page: () => const EmployeeEditProfile()),
     GetPage(name: employeeProfileScreen, page: () => EmployeeProfileScreen()),
     GetPage(name: employeeHomeScreen, page: () => const EmployeeHomeScreen()),
-    GetPage(name: employeeNotificationScreen,page: () => EmployeeNotificationScreen(),
+    GetPage(
+      name: employeeNotificationScreen,
+      page: () => EmployeeNotificationScreen(),
       transition: Transition.fadeIn,
       // transitionDuration: const Duration(milliseconds: 500),
     ),
@@ -375,19 +387,19 @@ static const String freeServiceNewScreen ="/FreeServiceNewScreen";
     GetPage(name: editEmployeeDetails, page: () => const EditEmployeeDetails()),
     GetPage(name: languageScreen, page: () => LanguageScreen()),
     GetPage(name: getStartedScreen, page: () => const GetStartedScreen()),
-    GetPage(name: getStartedLoadingScreen, page: () => const GetStartedLoadingScreen()),
-  //  GetPage(name: languageOnboardingScreen, page: () =>  LanguageOnBoardingScreen()),
+    GetPage(
+        name: getStartedLoadingScreen,
+        page: () => const GetStartedLoadingScreen()),
+    //  GetPage(name: languageOnboardingScreen, page: () =>  LanguageOnBoardingScreen()),
 
-  GetPage(
-  name: subscriptionOnboardingScreen,
-  page: () => SubscriptionMainScreen(
-  isOnboarding: Get.arguments?['isOnboarding'] ?? false,
-  isFreeEnd: Get.arguments?['isFreeEnd'] ?? false,
-  ),
-  ),
+    GetPage(
+      name: subscriptionOnboardingScreen,
+      page: () => SubscriptionMainScreen(
+        isOnboarding: Get.arguments?['isOnboarding'] ?? false,
+        isFreeEnd: Get.arguments?['isFreeEnd'] ?? false,
+      ),
+    ),
 
-    GetPage(name: freeServiceNewScreen, page: () =>  FreeServiceNewScreen()),
-
-
+    GetPage(name: freeServiceNewScreen, page: () => FreeServiceNewScreen()),
   ];
 }
