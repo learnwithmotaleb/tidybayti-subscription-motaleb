@@ -138,6 +138,7 @@ class ApiUrl {
   static const subscription =
       "$baseUrl/payment/google-play/verify-subscription";
   static const iosSubscription = "$baseUrl/payment/apple/verify-subscription";
+  static const iosWebhook = "$baseUrl/payment/apple/webhook";
 
   /// Silent subscription status refresh — reuses the profile endpoint which
   /// already returns `isSubscribed` and `productId` fields.

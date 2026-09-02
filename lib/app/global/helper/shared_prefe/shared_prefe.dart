@@ -8,6 +8,10 @@ class SharedPreferenceValue {
   static const String isOnboarding = "isOnboarding";
   static const String isSubscribed = "is_subscribed";
   static const String activeProductId = "active_product_id";
+  // Holds a not-yet-server-verified purchase receipt so it can be retried
+  // on the next app launch if the backend call failed/timed out.
+  static const String pendingIosReceiptSync = "pending_ios_receipt_sync";
+  static const String pendingAndroidReceiptSync = "pending_android_receipt_sync";
 }
 
 class SharePrefsHelper {

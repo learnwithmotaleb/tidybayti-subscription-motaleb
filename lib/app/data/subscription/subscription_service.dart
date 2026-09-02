@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:get/get_connect/connect.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -66,6 +67,10 @@ class SubscriptionService {
     );
 
     await _fetchProducts(); // ✅ NEW
+
+    // If a previous purchase was granted locally but never made it to the
+    // server (network drop, backend down, timeout), retry it silently now.
+    unawaited(_retryPendingSyncIfAny());
 
     debugPrint('✅ SubscriptionService initialized');
   }
@@ -148,51 +153,28 @@ class SubscriptionService {
             final String reqPurchaseToken =
                 purchase.verificationData.serverVerificationData;
 
+            // ✅ Google Play has already charged the user at this point —
+            // unlock the app immediately instead of waiting on our backend,
+            // so a slow/unreachable/failing server call can never leave a
+            // paid purchase stuck on the paywall.
+            await _grantLocalEntitlement(purchase);
+            await _iap.completePurchase(purchase);
+
             if (reqPurchaseToken.isEmpty || purchase.productID.isEmpty) {
-              debugPrint('⚠️ Empty token — skipping');
-              await _iap.completePurchase(purchase);
-              break;
-            }
-
-            final token = await SharePrefsHelper.getString(AppConstants.token);
-            final String packageType =
-                purchase.productID.contains('yearly') ? 'yearly' : 'monthly';
-
-            final connect = GetConnect();
-            final response = await connect.post(
-              ApiUrl.subscription,
-              {
-                "subscriptionId": purchase.productID,
-                "purchaseToken": reqPurchaseToken,
-                "packageType": packageType,
-              },
-              headers: {
-                "Authorization": "Bearer $token",
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-              },
-            );
-
-            if (response.statusCode == 200 || response.statusCode == 201) {
-              debugPrint('✅ Subscription verified');
-              await SharePrefsHelper.setBool(
-                  SharedPreferenceValue.isSubscribed, true);
-              await SharePrefsHelper.setString(
-                  SharedPreferenceValue.activeProductId, purchase.productID);
-              _isPurchased = true;
-              _activeProductId = purchase.productID;
-              onPurchaseUpdated?.call(true);
-              await _iap.completePurchase(purchase);
+              debugPrint('⚠️ Empty token — skipping server sync');
             } else {
-              debugPrint('❌ Failed: ${response.statusCode}');
-              onError?.call(response.body?['message'] ?? "Verification failed");
+              unawaited(_verifyWithBackend(
+                productId: purchase.productID,
+                purchaseToken: reqPurchaseToken,
+              ));
             }
             break;
           }
 
         case PurchaseStatus.restored:
           _userInitiatedPurchase = false;
-          debugPrint('🔄 Restored — skipping API');
+          debugPrint('🔄 Restored');
+          await _grantLocalEntitlement(purchase);
           await _iap.completePurchase(purchase);
           break;
 
@@ -212,6 +194,115 @@ class SubscriptionService {
           debugPrint('⏳ Pending...');
           break;
       }
+    }
+  }
+
+  /// Grants premium access on-device right away. Called as soon as Play
+  /// Billing reports `purchased`/`restored` — the user has already paid
+  /// Google, so the app must never wait on our own server before unlocking.
+  Future<void> _grantLocalEntitlement(PurchaseDetails purchase) async {
+    await SharePrefsHelper.setBool(SharedPreferenceValue.isSubscribed, true);
+    await SharePrefsHelper.setString(
+        SharedPreferenceValue.activeProductId, purchase.productID);
+
+    _isPurchased = true;
+    _activeProductId = purchase.productID;
+    onPurchaseUpdated?.call(true);
+  }
+
+  /// Records/verifies the purchase with our backend. This runs in the
+  /// background (never gates the UI). On failure it retries with backoff,
+  /// and if still unresolved, persists the token so [_retryPendingSyncIfAny]
+  /// can try again on the next app launch — the local entitlement already
+  /// granted in [_grantLocalEntitlement] is never revoked because of this.
+  Future<void> _verifyWithBackend({
+    required String productId,
+    required String purchaseToken,
+    int attempt = 1,
+  }) async {
+    const int maxAttempts = 3;
+
+    try {
+      final token = await SharePrefsHelper.getString(AppConstants.token);
+      final String packageType =
+          productId.contains('yearly') ? 'yearly' : 'monthly';
+
+      final connect = GetConnect();
+      final response = await connect
+          .post(
+            ApiUrl.subscription,
+            {
+              "subscriptionId": productId,
+              "purchaseToken": purchaseToken,
+              "packageType": packageType,
+            },
+            headers: {
+              "Authorization": "Bearer $token",
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('✅ Subscription verified with server');
+        await _clearPendingSync();
+        return;
+      }
+
+      debugPrint('❌ Verification failed: ${response.statusCode}');
+    } catch (error, stackTrace) {
+      debugPrintStack(
+        label: 'Verification error (attempt $attempt): $error',
+        stackTrace: stackTrace,
+      );
+    }
+
+    if (attempt < maxAttempts) {
+      await Future.delayed(Duration(seconds: attempt * 3));
+      return _verifyWithBackend(
+        productId: productId,
+        purchaseToken: purchaseToken,
+        attempt: attempt + 1,
+      );
+    }
+
+    await _savePendingSync(productId: productId, purchaseToken: purchaseToken);
+  }
+
+  Future<void> _savePendingSync({
+    required String productId,
+    required String purchaseToken,
+  }) async {
+    final String data = jsonEncode({
+      'subscriptionId': productId,
+      'purchaseToken': purchaseToken,
+    });
+    await SharePrefsHelper.setString(
+        SharedPreferenceValue.pendingAndroidReceiptSync, data);
+  }
+
+  Future<void> _clearPendingSync() async {
+    await SharePrefsHelper.remove(SharedPreferenceValue.pendingAndroidReceiptSync);
+  }
+
+  /// Best-effort retry of a purchase that got locally granted but never made
+  /// it to the server (app killed mid-sync, backend was unreachable, etc).
+  Future<void> _retryPendingSyncIfAny() async {
+    final String raw = await SharePrefsHelper.getString(
+        SharedPreferenceValue.pendingAndroidReceiptSync);
+    if (raw.isEmpty) return;
+
+    try {
+      final Map<String, dynamic> data =
+          jsonDecode(raw) as Map<String, dynamic>;
+      await _verifyWithBackend(
+        productId: data['subscriptionId'] as String? ?? '',
+        purchaseToken: data['purchaseToken'] as String? ?? '',
+      );
+    } catch (e) {
+      debugPrint('⚠️ Failed to parse pending sync data: $e');
+      await _clearPendingSync();
     }
   }
 

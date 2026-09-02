@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'package:get/get_connect/connect.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:tidybayte/app/data/service/api_url.dart';
 import 'package:tidybayte/app/global/helper/shared_prefe/shared_prefe.dart';
 import 'package:tidybayte/app/utils/app_const/app_const.dart';
@@ -70,6 +72,10 @@ class IosSubscriptionService {
     );
 
     await _fetchProducts(); // ✅ NEW
+
+    // If a previous purchase was granted locally but never made it to the
+    // server (network drop, backend down, timeout), retry it silently now.
+    unawaited(_retryPendingSyncIfAny());
 
     debugPrint('✅ [iOS IAP] IosSubscriptionService initialized');
   }
@@ -158,15 +164,30 @@ class IosSubscriptionService {
             final String receiptData =
                 purchase.verificationData.serverVerificationData;
 
-            if (receiptData.isEmpty || purchase.productID.isEmpty) {
-              debugPrint('⚠️ [iOS IAP] Empty receipt — skipping verification');
-              if (purchase.pendingCompletePurchase) {
-                await _iap.completePurchase(purchase);
-              }
-              break;
+            // ✅ Apple has already charged the user at this point — unlock
+            // the app immediately instead of waiting on our backend. This is
+            // what App Review flagged: a slow/unreachable/failing server
+            // call must never leave a paid purchase stuck on the paywall.
+            await _grantLocalEntitlement(purchase);
+
+            if (purchase.pendingCompletePurchase) {
+              await _iap.completePurchase(purchase);
             }
 
-            await _verifyAndComplete(purchase, receiptData);
+            if (receiptData.isEmpty || purchase.productID.isEmpty) {
+              debugPrint('⚠️ [iOS IAP] Empty receipt — skipping server sync');
+            } else {
+              // Record/verify with our backend in the background. Failures
+              // are retried with backoff and, if still unresolved, retried
+              // again on the next app launch — they no longer block the user.
+              unawaited(_verifyWithBackend(
+                productId: purchase.productID,
+                receiptData: receiptData,
+                transactionId: purchase.purchaseID ?? '',
+                originalTransactionId: _originalTransactionId(purchase),
+                transactionDate: purchase.transactionDate ?? '',
+              ));
+            }
             break;
           }
 
@@ -177,13 +198,23 @@ class IosSubscriptionService {
             final String receiptData =
                 purchase.verificationData.serverVerificationData;
 
+            await _grantLocalEntitlement(purchase);
+
+            if (purchase.pendingCompletePurchase) {
+              await _iap.completePurchase(purchase);
+            }
+
             if (receiptData.isNotEmpty) {
-              await _verifyAndComplete(purchase, receiptData, isRestore: true);
+              unawaited(_verifyWithBackend(
+                productId: purchase.productID,
+                receiptData: receiptData,
+                transactionId: purchase.purchaseID ?? '',
+                originalTransactionId: _originalTransactionId(purchase),
+                transactionDate: purchase.transactionDate ?? '',
+                isRestore: true,
+              ));
             } else {
-              if (purchase.pendingCompletePurchase) {
-                await _iap.completePurchase(purchase);
-              }
-              debugPrint('🔄 [iOS IAP] Restored — no receipt data, skipping');
+              debugPrint('🔄 [iOS IAP] Restored — no receipt data, skipping sync');
             }
             break;
           }
@@ -210,61 +241,159 @@ class IosSubscriptionService {
     }
   }
 
-  Future<void> _verifyAndComplete(
-      PurchaseDetails purchase,
-      String receiptData, {
-        bool isRestore = false,
-      }) async {
+  /// Apple's "original transaction id" identifies the subscription across
+  /// renewals/restores — for a brand-new purchase it's the same as the
+  /// transaction id itself; StoreKit only sets [originalTransaction] once a
+  /// transaction is a renewal or a restore.
+  String _originalTransactionId(PurchaseDetails purchase) {
+    if (purchase is AppStorePurchaseDetails) {
+      return purchase.skPaymentTransaction.originalTransaction
+              ?.transactionIdentifier ??
+          purchase.skPaymentTransaction.transactionIdentifier ??
+          purchase.purchaseID ??
+          '';
+    }
+    return purchase.purchaseID ?? '';
+  }
+
+  /// Grants premium access on-device right away. Called as soon as StoreKit
+  /// reports `purchased`/`restored` — the user has already paid Apple, so
+  /// the app must never wait on our own server before unlocking.
+  Future<void> _grantLocalEntitlement(PurchaseDetails purchase) async {
+    await SharePrefsHelper.setBool(SharedPreferenceValue.isSubscribed, true);
+    await SharePrefsHelper.setString(
+        SharedPreferenceValue.activeProductId, purchase.productID);
+
+    _isPurchased = true;
+    _activeProductId = purchase.productID;
+    onPurchaseUpdated?.call(true);
+  }
+
+  /// Records/verifies the purchase with our backend. This runs in the
+  /// background (never gates the UI). On failure it retries with backoff,
+  /// and if still unresolved, persists the receipt so [_retryPendingSyncIfAny]
+  /// can try again on the next app launch — the local entitlement already
+  /// granted in [_grantLocalEntitlement] is never revoked because of this.
+  Future<void> _verifyWithBackend({
+    required String productId,
+    required String receiptData,
+    required String transactionId,
+    required String originalTransactionId,
+    required String transactionDate,
+    bool isRestore = false,
+    int attempt = 1,
+  }) async {
+    const int maxAttempts = 3;
+
     try {
       final String token = await SharePrefsHelper.getString(AppConstants.token);
-
       final String packageType =
-      purchase.productID == yearlyProductId ? 'yearly' : 'monthly';
+          productId == yearlyProductId ? 'yearly' : 'monthly';
 
       final connect = GetConnect();
-      final response = await connect.post(
-        ApiUrl.iosSubscription,
-        {
-          'subscriptionId': purchase.productID,
-          'receiptData': receiptData,
-          'packageType': packageType,
-          'transactionId': purchase.purchaseID ?? '',
-          'transactionDate': purchase.transactionDate ?? '',
-          'platform': 'ios',
-        },
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
+      final response = await connect
+          .post(
+            ApiUrl.iosSubscription,
+            {
+              'productId': productId,
+              'receiptData': receiptData,
+              'packageType': packageType,
+              'transactionId': transactionId,
+              'originalTransactionId': originalTransactionId,
+              'transactionDate': transactionDate,
+              'platform': 'ios',
+            },
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('✅ [iOS IAP] ${isRestore ? "Restore" : "Purchase"} verified');
-
-        await SharePrefsHelper.setBool(SharedPreferenceValue.isSubscribed, true);
-        await SharePrefsHelper.setString(
-            SharedPreferenceValue.activeProductId, purchase.productID);
-
-        _isPurchased = true;
-        _activeProductId = purchase.productID;
-        onPurchaseUpdated?.call(true);
-      } else {
-        debugPrint(
-            '❌ [iOS IAP] Verification failed: ${response.statusCode} ${response.body}');
-        onError?.call(
-            response.body?['message'] ?? 'Subscription verification failed');
+        debugPrint('✅ [iOS IAP] ${isRestore ? "Restore" : "Purchase"} verified with server');
+        await _clearPendingSync();
+        return;
       }
+
+      debugPrint(
+          '❌ [iOS IAP] Verification failed: ${response.statusCode} ${response.body}');
     } catch (error, stackTrace) {
       debugPrintStack(
-        label: '[iOS IAP] Verification error: $error',
+        label: '[iOS IAP] Verification error (attempt $attempt): $error',
         stackTrace: stackTrace,
       );
-      onError?.call('Subscription verification failed. Please try again.');
-    } finally {
-      if (purchase.pendingCompletePurchase) {
-        await _iap.completePurchase(purchase);
-      }
+    }
+
+    if (attempt < maxAttempts) {
+      await Future.delayed(Duration(seconds: attempt * 3));
+      return _verifyWithBackend(
+        productId: productId,
+        receiptData: receiptData,
+        transactionId: transactionId,
+        originalTransactionId: originalTransactionId,
+        transactionDate: transactionDate,
+        isRestore: isRestore,
+        attempt: attempt + 1,
+      );
+    }
+
+    await _savePendingSync(
+      productId: productId,
+      receiptData: receiptData,
+      transactionId: transactionId,
+      originalTransactionId: originalTransactionId,
+      transactionDate: transactionDate,
+      isRestore: isRestore,
+    );
+  }
+
+  Future<void> _savePendingSync({
+    required String productId,
+    required String receiptData,
+    required String transactionId,
+    required String originalTransactionId,
+    required String transactionDate,
+    required bool isRestore,
+  }) async {
+    final String data = jsonEncode({
+      'productId': productId,
+      'receiptData': receiptData,
+      'transactionId': transactionId,
+      'originalTransactionId': originalTransactionId,
+      'transactionDate': transactionDate,
+      'isRestore': isRestore,
+    });
+    await SharePrefsHelper.setString(
+        SharedPreferenceValue.pendingIosReceiptSync, data);
+  }
+
+  Future<void> _clearPendingSync() async {
+    await SharePrefsHelper.remove(SharedPreferenceValue.pendingIosReceiptSync);
+  }
+
+  /// Best-effort retry of a purchase that got locally granted but never made
+  /// it to the server (app killed mid-sync, backend was unreachable, etc).
+  Future<void> _retryPendingSyncIfAny() async {
+    final String raw =
+        await SharePrefsHelper.getString(SharedPreferenceValue.pendingIosReceiptSync);
+    if (raw.isEmpty) return;
+
+    try {
+      final Map<String, dynamic> data =
+          jsonDecode(raw) as Map<String, dynamic>;
+      await _verifyWithBackend(
+        productId: data['productId'] as String? ?? '',
+        receiptData: data['receiptData'] as String? ?? '',
+        transactionId: data['transactionId'] as String? ?? '',
+        originalTransactionId: data['originalTransactionId'] as String? ?? '',
+        transactionDate: data['transactionDate'] as String? ?? '',
+        isRestore: data['isRestore'] as bool? ?? false,
+      );
+    } catch (e) {
+      debugPrint('⚠️ [iOS IAP] Failed to parse pending sync data: $e');
+      await _clearPendingSync();
     }
   }
 
