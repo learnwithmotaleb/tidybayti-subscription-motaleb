@@ -49,6 +49,7 @@ Map<String, String> english = {
   "First name": "First name",
   "Last name": "Last name",
   "Contact number": "Contact number",
+  "Optional": "Optional",
   "Password": "Password",
   "Confirm Password": "Confirm Password",
   "Save Password": "Save Password",

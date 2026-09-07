@@ -49,6 +49,7 @@ Map<String, String> arabic = {
   "First name": "الاسم الأول",
   "Last name": "الاسم الأخير",
   "Contact number": "رقم الاتصال",
+  "Optional": "اختياري",
   "Password": "كلمة المرور",
   "Confirm Password": "تأكيد كلمة المرور",
   "Save Password": "حفظ كلمة المرور",

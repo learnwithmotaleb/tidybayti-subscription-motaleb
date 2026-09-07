@@ -61,6 +61,7 @@ class AppStrings {
   static const String lastName = "Last name";
   static const String language = "Language";
   static const String contactNumber = "Contact number";
+  static const String optional = "Optional";
   static const String password = "Password";
   static const String confirmPassword = "Confirm Password";
   static const String savePassword = "Save Password";

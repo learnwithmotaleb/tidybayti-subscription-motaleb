@@ -108,32 +108,21 @@ class SignUpScreen extends StatelessWidget {
                         ),
                         SizedBox(height: ResponsiveHelper.spacing(10)),
 
-                        /// ========== Contact Number ==========
+                        /// ========== Contact Number (optional — Apple 2.1(b): sign-up must
+                        /// not require a contact number) ==========
                         CustomTextField(
-                          hintText: AppStrings.contactNumber.tr,
+                          hintText: "${AppStrings.contactNumber.tr} (${AppStrings.optional.tr})",
                           textEditingController:
                           authController.phoneNumberController,
                           keyboardType: TextInputType.phone,
-                          // validator: (value) {
-                          //   if (value == null || value.isEmpty) {
-                          //     return AppStrings.fieldCantBeEmpty;
-                          //   } else if (!RegExp(r'^[0-9]{10,15}$')
-                          //       .hasMatch(value)) {
-                          //     return "Enter a valid phone number";
-                          //   }
-                          //   return null;
-                          // },
-
-
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return AppStrings.fieldCantBeEmpty;
-                            } else if (value.length < 6) {
+                            if (value == null || value.trim().isEmpty) {
+                              return null; // optional — empty is valid
+                            } else if (value.trim().length < 6) {
                               return "Enter a valid phone number";
                             }
                             return null;
                           },
-
                         ),
                         SizedBox(height: ResponsiveHelper.spacing(10)),
 
