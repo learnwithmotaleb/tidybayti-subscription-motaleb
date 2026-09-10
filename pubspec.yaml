@@ -1,10 +1,11 @@
 name: tidybayte
 description: "A new Flutter project."
 publish_to: "none"
-version: 1.1.6+57
+
+version: 1.1.7+58
 
 environment:
-  sdk: ">=3.5.0 <4.0.0"
+  sdk: ">=3.10.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -45,15 +46,17 @@ dependencies:
   loading_animation_widget: ^1.3.0
   expandable_page_view: ^1.3.0
   font_awesome_flutter: ^11.0.0
-  in_app_purchase: ^3.2.3
+
+  # In-App Purchase
+  in_app_purchase: ^3.3.0
   in_app_purchase_storekit: ^0.4.0
+
   google_fonts: ^8.2.0
-
-
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
   mockito: ^5.4.2
   build_runner: ^2.4.6
   flutter_lints: ^4.0.0
@@ -68,11 +71,9 @@ flutter:
     - assets/images/
     - assets/app_icon/
 
-
 flutter_icons:
   android: true
   ios: true
-  #image_path: "assets/app_icon/app_icon.png"
   image_path: "assets/app_icon/tidybayti_icon.png"
   adaptive_icon_background: "#D3E7F4"
   adaptive_icon_foreground: "assets/app_icon/tidybayti_icon.png"
