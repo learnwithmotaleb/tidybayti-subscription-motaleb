@@ -13,6 +13,18 @@ import 'package:tidybayte/app/utils/ToastMsg/toast_message.dart';
 import 'package:tidybayte/app/utils/app_const/app_const.dart';
 
 import '../../data/subscription/subscription_controller.dart';
+import '../../controller/owner_controller/profile_controller/profile_controller.dart';
+import '../../controller/owner_controller/home_controller/home_controller.dart';
+import '../../controller/employee_controller/employee_home_controller.dart';
+import '../../controller/owner_controller/task_controller/task_controller.dart';
+import '../../controller/owner_controller/add_employee_controller/add_employee_controller.dart';
+import '../../controller/owner_controller/recipe_controller/recipe_controller.dart';
+import '../../controller/owner_controller/wallet_controller/wallet_controller.dart';
+import '../../controller/notification_controller/notification_controller.dart';
+import '../../controller/owner_controller/work_schedule_controller/work_schedule_controller.dart';
+import '../../view/screens/home_owner_screen/home_screen/room_details_screen/room_controller.dart';
+import '../../view/screens/home_owner_screen/schedule_screen/task_schedule/grocery_task/grocery_task_controller.dart';
+import '../../controller/employee_controller/employee_grocery_controller.dart';
 
 class AuthController extends GetxController {
   ApiClient apiClient = serviceLocator();
@@ -46,40 +58,46 @@ class AuthController extends GetxController {
 
   signup() async {
     signUpLoading.value = true;
-    var body = {
-      "firstName": firstNameController.text,
-      "lastName": lastNameController.text,
-      "email": emailController.text,
-      "phoneNumber": phoneNumberController.text,
-      "password": passwordController.text,
-      "confirmPassword": confirmPasswordController.text,
-      "role": "USER"
-    };
+    try {
+      var body = {
+        "firstName": firstNameController.text,
+        "lastName": lastNameController.text,
+        "email": emailController.text,
+        "phoneNumber": phoneNumberController.text,
+        "password": passwordController.text,
+        "confirmPassword": confirmPasswordController.text,
+        "role": "USER"
+      };
 
-    var response = await apiClient.post(body: body, url: ApiUrl.register);
-    if (response.statusCode == 200) {
-      Get.toNamed(AppRoutes.signUpOtp);
-      toastMessage(message: response.body["message"]);
-    } else if (response.statusCode == 400) {
-      String errorMessage = response.body["message"];
+      var response = await apiClient.post(body: body, url: ApiUrl.register);
+      if (response.statusCode == 200) {
+        Get.toNamed(AppRoutes.signUpOtp);
+        toastMessage(message: response.body["message"]);
+      } else if (response.statusCode == 400) {
+        String errorMessage = response.body["message"];
 
-      if (errorMessage.contains("Account active. Please Login")) {
-        toastMessage(message: errorMessage);
-        Get.toNamed(AppRoutes.signInScreen);
-      } else if (errorMessage
-          .contains("Already have an account. Please activate")) {
-        toastMessage(message: errorMessage);
-        Get.toNamed(
-          AppRoutes.signUpOtp,
-        );
+        if (errorMessage.contains("Account active. Please Login")) {
+          toastMessage(message: errorMessage);
+          Get.toNamed(AppRoutes.signInScreen);
+        } else if (errorMessage
+            .contains("Already have an account. Please activate")) {
+          toastMessage(message: errorMessage);
+          Get.toNamed(
+            AppRoutes.signUpOtp,
+          );
+        } else {
+          toastMessage(message: errorMessage);
+        }
       } else {
-        toastMessage(message: errorMessage);
+        ApiChecker.checkApi(response);
       }
-    } else {
-      ApiChecker.checkApi(response);
+    } catch (e) {
+      debugPrint("Error in signup: $e");
+      toastMessage(message: "Connection error. Please try again.");
+    } finally {
+      signUpLoading.value = false;
+      signUpLoading.refresh();
     }
-    signUpLoading.value = false;
-    signUpLoading.refresh();
   }
 
   ///==================================✅✅SignUp OTp✅✅=======================
@@ -87,30 +105,34 @@ class AuthController extends GetxController {
   RxBool isSignUpOtp = false.obs;
   signUpOtp() async {
     isSignUpOtp.value = true;
-    var body = {
-      "email": emailController.text,
-      "activationCode": otpController.text
-    };
-    var response =
-        await apiClient.post(body: body, url: ApiUrl.activateAccount);
-    if (response.statusCode == 201) {
-      SharePrefsHelper.setString(
-          AppConstants.token, response.body['data']["accessToken"]);
+    try {
+      var body = {
+        "email": emailController.text,
+        "activationCode": otpController.text
+      };
+      var response =
+          await apiClient.post(body: body, url: ApiUrl.activateAccount);
+      if (response.statusCode == 201) {
+        SharePrefsHelper.setString(
+            AppConstants.token, response.body['data']["accessToken"]);
 
-      debugPrint(
-          '🔑 Token saved after activation: ${response.body['data']["accessToken"]}');
+        debugPrint('🔑 Token saved after activation: [PROTECTED]');
 
-      //  Get.offAllNamed(AppRoutes.freeServiceScreen);
-      Get.offAllNamed(AppRoutes.freeServiceNewScreen);
+        Get.offAllNamed(AppRoutes.freeServiceNewScreen);
 
-      toastMessage(message: response.body["message"]);
-    } else if (response.statusCode == 400) {
-      toastMessage(message: response.body["message"]);
-    } else {
-      ApiChecker.checkApi(response);
+        toastMessage(message: response.body["message"]);
+      } else if (response.statusCode == 400) {
+        toastMessage(message: response.body["message"]);
+      } else {
+        ApiChecker.checkApi(response);
+      }
+    } catch (e) {
+      debugPrint("Error in signUpOtp: $e");
+      toastMessage(message: "Connection error. Please try again.");
+    } finally {
+      isSignUpOtp.value = false;
+      isSignUpOtp.refresh();
     }
-    isSignUpOtp.value = false;
-    isSignUpOtp.refresh();
   }
 
   ///==================================✅✅Sign In Method✅✅=======================
@@ -120,13 +142,14 @@ class AuthController extends GetxController {
 
   signIn() async {
     isSignInLoading.value = true;
-    var body = {
-      "email": emailController.text,
-      "password": passwordController.text,
-      "role": selectedRole // Send the role user selected (USER or EMPLOYEE)
-    };
+    try {
+      var body = {
+        "email": emailController.text.trim(),
+        "password": passwordController.text,
+        "role": selectedRole // Send the role user selected (USER or EMPLOYEE)
+      };
 
-    var response = await apiClient.post(body: body, url: ApiUrl.login);
+      var response = await apiClient.post(body: body, url: ApiUrl.login);
     if (response.statusCode == 200) {
       emailController.clear();
       passwordController.clear();
@@ -262,8 +285,7 @@ class AuthController extends GetxController {
           AppConstants.token, response.body['data']["token"]);
 
       // ✅ Confirm হলে তারপর navigate করুন
-      final token = await SharePrefsHelper.getString(AppConstants.token);
-      debugPrint('🔑 Token saved: $token');
+      debugPrint('🔑 Token saved: [PROTECTED]');
 
       // ✅ NEW: cache ও controller clear করো
       await SharePrefsHelper.setBool(SharedPreferenceValue.isSubscribed, false);
@@ -294,8 +316,13 @@ class AuthController extends GetxController {
       SharePrefsHelper.setBool(AppConstants.isOwner, false);
       ApiChecker.checkApi(response);
     }
-    isSignInLoading.value = false;
-    isSignInLoading.refresh();
+    } catch (e) {
+      debugPrint("Error in signIn: $e");
+      toastMessage(message: "Connection failed. Please check your internet connection.");
+    } finally {
+      isSignInLoading.value = false;
+      isSignInLoading.refresh();
+    }
   }
 
 // Method to set the role before login
@@ -314,39 +341,77 @@ class AuthController extends GetxController {
 
   forgetEmail() async {
     isForgetLoading.value = true;
-    var body = {"email": emailController.text};
+    try {
+      var body = {"email": emailController.text.trim()};
 
-    var response = await apiClient.post(body: body, url: ApiUrl.forgotPassword);
-    if (response.statusCode == 200) {
-      toastMessage(message: response.body["message"]);
-      Get.toNamed(AppRoutes.forgotPasswordOtp);
-    } else if (response.statusCode == 400) {
-      toastMessage(message: response.body["message"]);
-    } else {
-      ApiChecker.checkApi(response);
+      var response = await apiClient.post(body: body, url: ApiUrl.forgotPassword);
+      if (response.statusCode == 200) {
+        toastMessage(message: response.body["message"]);
+        Get.toNamed(AppRoutes.forgotPasswordOtp);
+      } else if (response.statusCode == 400) {
+        toastMessage(message: response.body["message"]);
+      } else {
+        ApiChecker.checkApi(response);
+      }
+    } catch (e) {
+      debugPrint("Error in forgetEmail: $e");
+      toastMessage(message: "Connection error. Please try again.");
+    } finally {
+      isForgetLoading.value = false;
+      isForgetLoading.refresh();
     }
-    isForgetLoading.value = false;
-    isForgetLoading.refresh();
   }
 
   ///==================================✅✅Resend Otp✅✅=======================
 
   RxBool isResendOtp = false.obs;
 
-  resendOtp() async {
+  Future<bool> resendOtp() async {
     isResendOtp.value = true;
-    var body = {"email": emailController.text};
-
-    var response = await apiClient.post(body: body, url: ApiUrl.resendOtp);
-    if (response.statusCode == 200) {
-      toastMessage(message: response.body["message"]);
-    } else if (response.statusCode == 400) {
-      toastMessage(message: response.body["message"]);
-    } else {
-      ApiChecker.checkApi(response);
+    try {
+      var body = {"email": emailController.text};
+      var response = await apiClient.post(body: body, url: ApiUrl.resendOtp);
+      if (response.statusCode == 200) {
+        toastMessage(message: response.body["message"] ?? "OTP resent successfully");
+        return true;
+      } else if (response.statusCode == 400) {
+        toastMessage(message: response.body["message"] ?? "Failed to resend OTP");
+        return false;
+      } else {
+        ApiChecker.checkApi(response);
+        return false;
+      }
+    } catch (e) {
+      toastMessage(message: "Failed to resend code");
+      return false;
+    } finally {
+      isResendOtp.value = false;
+      isResendOtp.refresh();
     }
-    isResendOtp.value = false;
-    isResendOtp.refresh();
+  }
+
+  Future<bool> resendForgetOtp() async {
+    isResendOtp.value = true;
+    try {
+      var body = {"email": emailController.text};
+      var response = await apiClient.post(body: body, url: ApiUrl.forgotPassword);
+      if (response.statusCode == 200) {
+        toastMessage(message: response.body["message"] ?? "Verification code resent");
+        return true;
+      } else if (response.statusCode == 400) {
+        toastMessage(message: response.body["message"] ?? "Failed to resend code");
+        return false;
+      } else {
+        ApiChecker.checkApi(response);
+        return false;
+      }
+    } catch (e) {
+      toastMessage(message: "Failed to resend code");
+      return false;
+    } finally {
+      isResendOtp.value = false;
+      isResendOtp.refresh();
+    }
   }
 
   ///==================================✅✅Forget Otp Method✅✅=======================
@@ -354,19 +419,25 @@ class AuthController extends GetxController {
   RxBool isForgetOtp = false.obs;
   Future<void> forgetOtpVerify() async {
     isForgetOtp.value = true;
-    var body = {"email": emailController.text, "code": otpController.text};
-    var response =
-        await apiClient.post(body: body, url: ApiUrl.forgetPasswordOtpVerify);
-    if (response.statusCode == 200) {
-      toastMessage(message: response.body["message"]);
-      Get.toNamed(AppRoutes.resetPasswordScreen);
-    } else if (response.statusCode == 400) {
-      toastMessage(message: response.body["message"]);
-    } else {
-      ApiChecker.checkApi(response);
+    try {
+      var body = {"email": emailController.text.trim(), "code": otpController.text.trim()};
+      var response =
+          await apiClient.post(body: body, url: ApiUrl.forgetPasswordOtpVerify);
+      if (response.statusCode == 200) {
+        toastMessage(message: response.body["message"]);
+        Get.toNamed(AppRoutes.resetPasswordScreen);
+      } else if (response.statusCode == 400) {
+        toastMessage(message: response.body["message"]);
+      } else {
+        ApiChecker.checkApi(response);
+      }
+    } catch (e) {
+      debugPrint("Error in forgetOtpVerify: $e");
+      toastMessage(message: "Connection error. Please try again.");
+    } finally {
+      isForgetOtp.value = false;
+      isForgetOtp.refresh();
     }
-    isForgetOtp.value = false;
-    isForgetOtp.refresh();
   }
 
   ///==================================✅✅Reset password Method✅✅=======================
@@ -375,24 +446,30 @@ class AuthController extends GetxController {
 
   Future<void> resetPassword() async {
     isResetLoading.value = true;
-    var body = {
-      "email": emailController.text,
-      "confirmPassword": confirmPasswordController.text,
-      "newPassword": newPasswordController.text
-    };
+    try {
+      var body = {
+        "email": emailController.text.trim(),
+        "confirmPassword": confirmPasswordController.text,
+        "newPassword": newPasswordController.text
+      };
 
-    var response = await apiClient.post(body: body, url: ApiUrl.resetPassword);
-    if (response.statusCode == 200) {
-      clearResetField();
-      toastMessage(message: response.body["message"]);
-      Get.toNamed(AppRoutes.signInScreen);
-    } else if (response.statusCode == 400) {
-      toastMessage(message: response.body["message"]);
-    } else {
-      ApiChecker.checkApi(response);
+      var response = await apiClient.post(body: body, url: ApiUrl.resetPassword);
+      if (response.statusCode == 200) {
+        clearResetField();
+        toastMessage(message: response.body["message"]);
+        Get.toNamed(AppRoutes.signInScreen);
+      } else if (response.statusCode == 400) {
+        toastMessage(message: response.body["message"]);
+      } else {
+        ApiChecker.checkApi(response);
+      }
+    } catch (e) {
+      debugPrint("Error in resetPassword: $e");
+      toastMessage(message: "Connection error. Please try again.");
+    } finally {
+      isResetLoading.value = false;
+      isResetLoading.refresh();
     }
-    isResetLoading.value = false;
-    isResetLoading.refresh();
   }
 
   clearResetField() {
@@ -400,5 +477,69 @@ class AuthController extends GetxController {
     otpController.clear();
     newPasswordController.clear();
     confirmPasswordController.clear();
+  }
+
+  ///==================================✅✅Logout Method✅✅=======================
+  Future<void> logout() async {
+    try {
+      await SharePrefsHelper.remove(AppConstants.token);
+      await SharePrefsHelper.remove(AppConstants.profileID);
+      await SharePrefsHelper.setBool(SharedPreferenceValue.isSubscribed, false);
+      await SharePrefsHelper.setString(SharedPreferenceValue.activeProductId, '');
+      await SharePrefsHelper.setBool(AppConstants.rememberMe, false);
+      await SharePrefsHelper.setBool(AppConstants.isOwner, false);
+
+      // Clear all fields in AuthController
+      emailController.clear();
+      passwordController.clear();
+      confirmPasswordController.clear();
+      newPasswordController.clear();
+      otpController.clear();
+      firstNameController.clear();
+      lastNameController.clear();
+      phoneNumberController.clear();
+
+      // Clear cached controllers in memory
+      if (Get.isRegistered<ProfileController>()) {
+        Get.delete<ProfileController>(force: true);
+      }
+      if (Get.isRegistered<HomeController>()) {
+        Get.delete<HomeController>(force: true);
+      }
+      if (Get.isRegistered<EmployeeHomeController>()) {
+        Get.delete<EmployeeHomeController>(force: true);
+      }
+      if (Get.isRegistered<TaskController>()) {
+        Get.delete<TaskController>(force: true);
+      }
+      if (Get.isRegistered<AddEmployeeController>()) {
+        Get.delete<AddEmployeeController>(force: true);
+      }
+      if (Get.isRegistered<RecipeController>()) {
+        Get.delete<RecipeController>(force: true);
+      }
+      if (Get.isRegistered<WalletController>()) {
+        Get.delete<WalletController>(force: true);
+      }
+      if (Get.isRegistered<NotificationController>()) {
+        Get.delete<NotificationController>(force: true);
+      }
+      if (Get.isRegistered<WorkScheduleController>()) {
+        Get.delete<WorkScheduleController>(force: true);
+      }
+      if (Get.isRegistered<RoomController>()) {
+        Get.delete<RoomController>(force: true);
+      }
+      if (Get.isRegistered<GroceryTaskController>()) {
+        Get.delete<GroceryTaskController>(force: true);
+      }
+      if (Get.isRegistered<EmployeeGroceryController>()) {
+        Get.delete<EmployeeGroceryController>(force: true);
+      }
+    } catch (e) {
+      debugPrint("Error during logout: $e");
+    } finally {
+      Get.offAllNamed(AppRoutes.choseOnBoardingScreen);
+    }
   }
 }

@@ -491,6 +491,7 @@ Map<String, String> arabic = {
       'لا يمكن أن تكون كلمة المرور الجديدة مطابقة للحالية',
 
   'Password should match': 'يجب أن تتطابق كلمة المرور',
+  'Please fill in all required fields': 'يرجى ملء جميع الحقول المطلوبة',
   'Need Help?': 'هل تحتاج مساعدة؟',
   'Updating...': 'جارٍ التحديث...',
   'How to use': 'كيفية الاستخدام',

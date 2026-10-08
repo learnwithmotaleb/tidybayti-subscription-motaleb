@@ -7,6 +7,7 @@ import 'package:tidybayte/app/data/service/api_url.dart';
 import 'package:tidybayte/app/global/helper/GenerelError/general_error.dart';
 import 'package:tidybayte/app/global/helper/responsive_helper.dart';
 import 'package:tidybayte/app/global/helper/shared_prefe/shared_prefe.dart';
+import 'package:tidybayte/app/global/controller/auth_controller.dart';
 import 'package:tidybayte/app/global/helper/time_converter/time_converter.dart';
 import 'package:tidybayte/app/utils/app_colors/app_colors.dart';
 import 'package:tidybayte/app/utils/app_const/app_const.dart';
@@ -246,16 +247,10 @@ class EmployeeProfileScreen extends StatelessWidget {
                                 ///==============================Log Out=============
                                 CustomButton(
                                   onTap: () async {
-                                    await SharePrefsHelper.remove(
-                                        AppConstants.token);
-                                    await SharePrefsHelper.remove(
-                                        AppConstants.profileID);
-                                    SharePrefsHelper.setBool(
-                                        AppConstants.rememberMe, false);
-                                    SharePrefsHelper.setBool(
-                                        AppConstants.isOwner, false);
-                                    Get.offAllNamed(
-                                        AppRoutes.choseOnBoardingScreen);
+                                    final authController = Get.isRegistered<AuthController>()
+                                        ? Get.find<AuthController>()
+                                        : Get.put(AuthController());
+                                    await authController.logout();
                                   },
                                   fillColor: AppColors.blue50,
                                   title: AppStrings.logOut.tr,

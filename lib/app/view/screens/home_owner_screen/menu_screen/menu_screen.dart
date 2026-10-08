@@ -7,6 +7,7 @@ import 'package:tidybayte/app/utils/app_colors/app_colors.dart';
 import 'package:tidybayte/app/utils/app_const/app_const.dart';
 import 'package:tidybayte/app/utils/app_icons/app_icons.dart';
 import 'package:tidybayte/app/utils/app_strings/app_strings.dart';
+import 'package:tidybayte/app/global/controller/auth_controller.dart';
 
 import 'package:tidybayte/app/view/components/custom_menu_item/custom_menu_item.dart';
 import 'package:tidybayte/app/view/components/custom_text/custom_text.dart';
@@ -115,19 +116,10 @@ class MenuScreen extends StatelessWidget {
                           image: AppIcons.logOut,
                           text: AppStrings.logOut.tr,
                           onTap: () async {
-                            await SharePrefsHelper.remove(AppConstants.token);
-                            await SharePrefsHelper.remove(
-                                AppConstants.profileID);
-
-
-                            await SharePrefsHelper.setBool(SharedPreferenceValue.isSubscribed, false);
-                            await SharePrefsHelper.setString(SharedPreferenceValue.activeProductId, '');
-
-                            SharePrefsHelper.setBool(
-                                AppConstants.rememberMe, false);
-                            SharePrefsHelper.setBool(
-                                AppConstants.isOwner, false);
-                            Get.offAllNamed(AppRoutes.choseOnBoardingScreen);
+                            final authController = Get.isRegistered<AuthController>()
+                                ? Get.find<AuthController>()
+                                : Get.put(AuthController());
+                            await authController.logout();
                           },
                         ),
                       ],

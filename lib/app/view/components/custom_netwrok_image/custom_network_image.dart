@@ -109,18 +109,26 @@ class CustomNetworkImage extends StatelessWidget {
   }
 
   Widget _placeholderOrError({required bool isError}) {
+    final double iconSize = (height != null && height! < 50) ? 20 : 28;
     return Container(
       height: height,
       width: width,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         border: border,
-        color: Colors.grey.withOpacity(0.6),
+        color: Colors.grey.shade200,
         borderRadius: borderRadius,
         shape: boxShape,
       ),
       alignment: Alignment.center,
-      child: isError ? const Icon(Icons.error) : child,
+      child: child ??
+          Icon(
+            boxShape == BoxShape.circle
+                ? Icons.person_outline
+                : Icons.image_outlined,
+            color: Colors.grey.shade400,
+            size: iconSize,
+          ),
     );
   }
 }

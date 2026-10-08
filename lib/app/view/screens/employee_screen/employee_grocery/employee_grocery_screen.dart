@@ -68,39 +68,46 @@ class _WalletScreenState extends State<EmployeeGroceryScreen> {
                   ),
 
                   ///=============================== Tab Switching ========================
-                  Row(
-                    children: List.generate(
-                      schedule.length,
-                      (index) => Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              selectedTabIndex = index;
-                            });
-                          },
-                          child: Container(
-                            padding: ResponsiveHelper.symmetric(
-                                vertical: 10, horizontal: 28),
-                            decoration: BoxDecoration(
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveHelper.padding(16)),
+                    child: Row(
+                      children: List.generate(
+                        schedule.length,
+                        (index) => Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                selectedTabIndex = index;
+                              });
+                            },
+                            child: Container(
+                              alignment: Alignment.center,
+                              padding: ResponsiveHelper.symmetric(
+                                  vertical: 10, horizontal: 8),
+                              decoration: BoxDecoration(
+                                  color: selectedTabIndex == index
+                                      ? AppColors.light50
+                                      : AppColors.light50.withOpacity(0.7),
+                                  border: Border(
+                                    bottom: selectedTabIndex == index
+                                        ? BorderSide(
+                                            color: AppColors.blue900,
+                                            width: ResponsiveHelper.width(4),
+                                          )
+                                        : BorderSide(
+                                            color: AppColors.blue50,
+                                            width: ResponsiveHelper.width(4),
+                                          ),
+                                  )),
+                              child: CustomText(
+                                text: schedule[index],
+                                fontWeight: FontWeight.w500,
+                                fontSize: ResponsiveHelper.fontSize(14),
                                 color: selectedTabIndex == index
-                                    ? AppColors.light50
-                                    : AppColors.light50,
-                                border: Border(
-                                  bottom: selectedTabIndex == index
-                                      ? BorderSide(
-                                          color: AppColors.blue900,
-                                          width: ResponsiveHelper.width(4),
-                                        )
-                                      : BorderSide(
-                                          color: AppColors.blue50,
-                                          width: ResponsiveHelper.width(4),
-                                        ),
-                                )),
-                            child: CustomText(
-                              text: schedule[index],
-                              fontWeight: FontWeight.w500,
-                              fontSize: ResponsiveHelper.fontSize(14),
-                              color: AppColors.blue900,
+                                    ? AppColors.blue900
+                                    : AppColors.dark300,
+                              ),
                             ),
                           ),
                         ),

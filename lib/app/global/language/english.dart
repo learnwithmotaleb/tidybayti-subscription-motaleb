@@ -490,6 +490,7 @@ Map<String, String> english = {
       'New password cannot be same as current password',
 
   'Password should match': 'Password should match',
+  'Please fill in all required fields': 'Please fill in all required fields',
   'Need Help?': 'Need Help?',
   'Updating...': 'Updating...',
   'How to use': 'How to use',

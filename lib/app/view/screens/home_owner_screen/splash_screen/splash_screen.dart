@@ -30,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     print('🔍 SPLASH SCREEN DEBUG INFO:');
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    print('📌 token: $token');
+    print('📌 token: ${token != null && token.isNotEmpty ? "[PROTECTED]" : "[NONE]"}');
     print('📌 isOwner: $isOwner');
     print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 

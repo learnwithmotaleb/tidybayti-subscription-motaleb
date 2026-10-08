@@ -38,49 +38,53 @@ class AddEmployee {
     AddEmployeeController employeeController = Get.find();
     employeeController.setLoading(true);
 
-    var url = Uri.parse(ApiUrl.addEmployee);
-
-    var request = http.MultipartRequest("POST", url);
-
-    request.fields["firstName"] = firstName;
-    request.fields["lastName"] = lastName;
-    request.fields["email"] = email;
-    request.fields["password"] = password;
-    request.fields["phoneNumber"] = phoneNumber;
-    request.fields["jobType"] = jobType;
-    request.fields["designation"] = designation;
-    request.fields["address"] = address;
-    request.fields["CPRNumber"] = cprNumber;
-    request.fields["CPRExpDate"] = cprExpDate;
-    request.fields["passportNumber"] = passportNumber;
-    request.fields["passportExpDate"] = passportExpDate;
-    request.fields["note"] = note;
-    request.fields["dutyTime"] = dutyTime;
-    request.fields["breakTimeStart"] = breakTimeStar;
-    request.fields["breakTimeEnd"] = breakTimeEnd;
-    request.fields["workingDay"] = jsonEncode(workingDay);
-    request.fields["offDay"] = offDay;
-
-    request.files.add(await http.MultipartFile.fromPath(
-      "profile_image",
-      profileImage.path,
-      contentType: MediaType('image', 'jpeg'),
-    ));
-
-    String? savedToken = await SharePrefsHelper.getString(AppConstants.token);
-    var token = savedToken;
-
-    request.headers.addAll({
-      "Authorization": "Bearer $token",
-      "Content-Type": "multipart/form-data",
-    });
-
     try {
+      if (!await profileImage.exists()) {
+        employeeController.setLoading(false);
+        toastMessage(message: "❌ Profile image file does not exist.");
+        return;
+      }
+
+      var url = Uri.parse(ApiUrl.addEmployee);
+      var request = http.MultipartRequest("POST", url);
+
+      request.fields["firstName"] = firstName;
+      request.fields["lastName"] = lastName;
+      request.fields["email"] = email;
+      request.fields["password"] = password;
+      request.fields["phoneNumber"] = phoneNumber;
+      request.fields["jobType"] = jobType;
+      request.fields["designation"] = designation;
+      request.fields["address"] = address;
+      request.fields["CPRNumber"] = cprNumber;
+      request.fields["CPRExpDate"] = cprExpDate;
+      request.fields["passportNumber"] = passportNumber;
+      request.fields["passportExpDate"] = passportExpDate;
+      request.fields["note"] = note;
+      request.fields["dutyTime"] = dutyTime;
+      request.fields["breakTimeStart"] = breakTimeStar;
+      request.fields["breakTimeEnd"] = breakTimeEnd;
+      request.fields["workingDay"] = jsonEncode(workingDay);
+      request.fields["offDay"] = offDay;
+
+      request.files.add(await http.MultipartFile.fromPath(
+        "profile_image",
+        profileImage.path,
+        contentType: MediaType('image', 'jpeg'),
+      ));
+
+      String? savedToken = await SharePrefsHelper.getString(AppConstants.token);
+      var token = savedToken;
+
+      request.headers.addAll({
+        "Authorization": "Bearer $token",
+        "Content-Type": "multipart/form-data",
+      });
+
       var response = await request.send();
       var responseData = await response.stream.bytesToString();
 
-      employeeController
-          .setLoading(false); // Set loading to false after request
+      employeeController.setLoading(false);
 
       if (response.statusCode == 200) {
         employeeController.addEmployeeFieldClear();

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tidybayte/app/global/controller/auth_controller.dart';
@@ -8,13 +9,58 @@ import 'package:tidybayte/app/utils/app_strings/app_strings.dart';
 import 'package:tidybayte/app/view/components/custom_button/custom_button.dart';
 import 'package:tidybayte/app/view/components/custom_loader/custom_loader.dart';
 import 'package:tidybayte/app/view/components/custom_menu_appbar/custom_menu_appbar.dart';
+import 'package:tidybayte/app/view/components/custom_text/custom_text.dart';
 import 'package:tidybayte/app/view/components/custom_text_field/custom_text_field.dart';
 
-class ForgotPasswordOtp extends StatelessWidget {
-  ForgotPasswordOtp({super.key});
+class ForgotPasswordOtp extends StatefulWidget {
+  const ForgotPasswordOtp({super.key});
 
+  @override
+  State<ForgotPasswordOtp> createState() => _ForgotPasswordOtpState();
+}
+
+class _ForgotPasswordOtpState extends State<ForgotPasswordOtp> {
   final AuthController authController = Get.find<AuthController>();
   final formKey = GlobalKey<FormState>();
+
+  final RxInt _secondsRemaining = 60.obs;
+  Timer? _timer;
+
+  void startTimer() {
+    _timer?.cancel();
+    _secondsRemaining.value = 60;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining.value > 0) {
+        _secondsRemaining.value--;
+      } else {
+        _timer?.cancel();
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _resendOtp() {
+    if (_secondsRemaining.value == 0) {
+      startTimer();
+      authController.resendForgetOtp().then((value) {
+        if (!value) {
+          _secondsRemaining.value = 0;
+          _timer?.cancel();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,14 +104,36 @@ class ForgotPasswordOtp extends StatelessWidget {
                             hintText: AppStrings.enterSIxDegit.tr,
                             textEditingController: authController.otpController,
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return AppStrings.fieldCantBeEmpty;
+                              if (value == null || value.trim().isEmpty) {
+                                return AppStrings.fieldCantBeEmpty.tr;
                               }
                               return null;
                             },
                           ),
 
-                          SizedBox(height: ResponsiveHelper.spacing(48)),
+                          SizedBox(height: ResponsiveHelper.spacing(16)),
+
+                          /// ========== Resend OTP ==========
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: _secondsRemaining.value == 0
+                                  ? _resendOtp
+                                  : null,
+                              child: CustomText(
+                                text: _secondsRemaining.value == 0
+                                    ? "Resend OTP"
+                                    : "Resend OTP in ${_secondsRemaining.value}s",
+                                color: _secondsRemaining.value == 0
+                                    ? AppColors.dark400
+                                    : AppColors.dark300,
+                                fontWeight: FontWeight.w600,
+                                fontSize: ResponsiveHelper.fontSize(14),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: ResponsiveHelper.spacing(32)),
 
                           /// ========== Verify Button ==========
                           authController.isForgetOtp.value

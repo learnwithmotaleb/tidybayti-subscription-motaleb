@@ -73,6 +73,7 @@ class _SignUpOtpState extends State<SignUpOtp> {
       authController.resendOtp().then((value) {
         if (value != true) {
           _secondsRemaining.value = 0;
+          _timer?.cancel();
         }
       });
     }

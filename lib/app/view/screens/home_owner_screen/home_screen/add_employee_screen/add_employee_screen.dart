@@ -409,16 +409,120 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                                   ? const CustomLoader()
                                   : CustomButton(
                                 onTap: () {
-                                  if (!controller.formKey.currentState!.validate() &&
-                                      controller.validateProfileImage()) {
+                                  // 1. Profile image validation
+                                  final profileImage = controller.profileImage.value;
+                                  if (profileImage == null) {
+                                    Get.snackbar(
+                                      AppStrings.error.tr,
+                                      AppStrings.profileImageIsRequired.tr,
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.redAccent,
+                                      colorText: Colors.white,
+                                      margin: const EdgeInsets.all(16),
+                                      borderRadius: 8,
+                                    );
                                     return;
                                   }
+
+                                  // 2. CPR validation & auto-expand
+                                  if (controller.cprNumberController.text.trim().isEmpty ||
+                                      controller.cprExpireDateController.text.trim().isEmpty) {
+                                    controller.isCprOpen.value = true;
+                                    Get.snackbar(
+                                      AppStrings.error.tr,
+                                      controller.cprNumberController.text.trim().isEmpty
+                                          ? AppStrings.pleaseEnterCprNumber.tr
+                                          : AppStrings.pleaseEnterCprExpireDate.tr,
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.redAccent,
+                                      colorText: Colors.white,
+                                      margin: const EdgeInsets.all(16),
+                                      borderRadius: 8,
+                                    );
+                                    return;
+                                  }
+
+                                  // 3. Passport validation & auto-expand
+                                  if (controller.passportController.text.trim().isEmpty ||
+                                      controller.passportExpireDateController.text.trim().isEmpty) {
+                                    controller.isPassportOpen.value = true;
+                                    Get.snackbar(
+                                      AppStrings.error.tr,
+                                      controller.passportController.text.trim().isEmpty
+                                          ? AppStrings.pleaseEnterPassportNumber.tr
+                                          : AppStrings.pleaseEnterPassportExpireDate.tr,
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.redAccent,
+                                      colorText: Colors.white,
+                                      margin: const EdgeInsets.all(16),
+                                      borderRadius: 8,
+                                    );
+                                    return;
+                                  }
+
+                                  // 4. Form validation for visible text fields
+                                  if (controller.formKey.currentState?.validate() != true) {
+                                    Get.snackbar(
+                                      AppStrings.error.tr,
+                                      AppStrings.pleaseFillAllRequiredFields.tr,
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.redAccent,
+                                      colorText: Colors.white,
+                                      margin: const EdgeInsets.all(16),
+                                      borderRadius: 8,
+                                    );
+                                    return;
+                                  }
+
+                                  // 5. Job type validation
+                                  if (controller.selectedJobType.value.trim().isEmpty) {
+                                    Get.snackbar(
+                                      AppStrings.error.tr,
+                                      AppStrings.pleaseEnterJobType.tr,
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.redAccent,
+                                      colorText: Colors.white,
+                                      margin: const EdgeInsets.all(16),
+                                      borderRadius: 8,
+                                    );
+                                    return;
+                                  }
+
+                                  // 6. Working days validation
+                                  if (controller.getSelectedDays().isEmpty) {
+                                    Get.snackbar(
+                                      AppStrings.error.tr,
+                                      AppStrings.pleaseSelectWeekDay.tr,
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.redAccent,
+                                      colorText: Colors.white,
+                                      margin: const EdgeInsets.all(16),
+                                      borderRadius: 8,
+                                    );
+                                    return;
+                                  }
+
+                                  // 7. Off day validation
+                                  if (controller.selectedOffDayIndex == null ||
+                                      controller.getSelectedOffDays().trim().isEmpty) {
+                                    Get.snackbar(
+                                      AppStrings.error.tr,
+                                      AppStrings.minimumOneOffDayRequired.tr,
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.redAccent,
+                                      colorText: Colors.white,
+                                      margin: const EdgeInsets.all(16),
+                                      borderRadius: 8,
+                                    );
+                                    return;
+                                  }
+
                                   AddEmployee.addEmployee(
                                     firstName: controller.firstNameController.text.trim(),
                                     lastName: controller.lastNameController.text.trim(),
                                     email: controller.emailController.text.trim(),
                                     password: controller.passwordController.text.trim(),
-                                    profileImage: controller.profileImage.value!,
+                                    profileImage: profileImage,
                                     phoneNumber: controller.phoneNumberController.text.trim(),
                                     jobType: controller.selectedJobType.value,
                                     designation: controller.designationController.text.trim(),

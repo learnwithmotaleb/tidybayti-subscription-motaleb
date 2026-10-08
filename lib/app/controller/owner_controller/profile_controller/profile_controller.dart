@@ -107,51 +107,56 @@ final addressController = TextEditingController();
   RxBool updateProfileLoading = false.obs;
   updateProfile() async {
     updateProfileLoading.value = true;
+    try {
+      var body = {
+        "firstName": firstNameController.text,
+        "lastName": lastNameController.text,
+        "phoneNumber": phoneNumberController.text,
+        "address": addressController.text,
+      };
 
-    var body = {
-      "firstName": firstNameController.text,
-      "lastName": lastNameController.text,
-      "phoneNumber": phoneNumberController.text,
-      "address": addressController.text,
-    };
+      String imagePath = image.value;
 
-    String imagePath = image.value;
+      // Check if image path is local or from server
+      bool isLocalImage = imagePath.startsWith('/data') || imagePath.startsWith('/storage');
 
-    // Check if image path is local or from server
-    bool isLocalImage = imagePath.startsWith('/data') || imagePath.startsWith('/storage');
+      if (isLocalImage) {
+        File file = File(imagePath);
 
-    if (isLocalImage) {
-      File file = File(imagePath);
-
-      if (!file.existsSync()) {
-        print("🚨 File Not Found:=========== $imagePath");
-        updateProfileLoading.value = false;
-        return;
+        if (!file.existsSync()) {
+          print("🚨 File Not Found:=========== $imagePath");
+          updateProfileLoading.value = false;
+          return;
+        }
+      } else {
+        print("📡 Using server image, no need to check locally: $imagePath");
       }
-    } else {
-      print("📡 Using server image, no need to check locally: $imagePath");
+
+      var response = isLocalImage
+          ? await apiClient.multipartRequest(
+        multipartBody: [MultipartBody("profile_image", File(imagePath))],
+        body: body,
+        url: ApiUrl.updateProfile,
+        reqType: "PATCH",
+      )
+          : await apiClient.patch(
+        body: body,
+        url: ApiUrl.updateProfile,
+      );
+
+      if (response.statusCode == 200) {
+        getProfile();
+        Get.back();
+        toastMessage(message: 'Profile updated successfully');
+      } else {
+        ApiChecker.checkApi(response);
+      }
+    } catch (e) {
+      print("❌ Error in updateProfile: $e");
+      toastMessage(message: 'Failed to update profile. Please try again.');
+    } finally {
+      updateProfileLoading.value = false;
     }
-
-    var response = isLocalImage
-        ? await apiClient.multipartRequest(
-      multipartBody: [MultipartBody("profile_image", File(imagePath))],
-      url: ApiUrl.updateProfile,
-      reqType: "PATCH",
-    )
-        : await apiClient.patch(
-      body: body,
-      url: ApiUrl.updateProfile,
-    );
-
-    if (response.statusCode == 200) {
-      getProfile();
-      Get.back();
-      toastMessage(message: 'Profile updated successfully');
-    } else {
-      ApiChecker.checkApi(response);
-    }
-
-    updateProfileLoading.value = false;
   }
 
 

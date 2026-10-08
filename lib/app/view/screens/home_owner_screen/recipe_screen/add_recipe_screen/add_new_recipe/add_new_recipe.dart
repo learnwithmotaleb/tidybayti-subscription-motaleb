@@ -496,27 +496,26 @@ class _AddNewRecipeState extends State<AddNewRecipe> {
                                 width: MediaQuery.of(context).size.width /
                                     1.1,
                                 onTap: () {
-                                  if (recipeController
-                                      .profileImage.value ==
-                                      null) {
+                                  if (recipeController.recipeNameController.text.trim().isEmpty) {
+                                    toastMessage(message: "Please enter recipe name");
+                                    return;
+                                  }
+                                  final recipeImageFile = recipeController.profileImage.value;
+                                  if (recipeImageFile == null) {
                                     toastMessage(
-                                        message: AppStrings
-                                            .pleaseSelectARecipeImage.tr);
-                                    print(
-                                        "❌ Please select a Recipe image.");
+                                        message: AppStrings.pleaseSelectARecipeImage.tr);
                                     return;
                                   }
                                   isEdit == false
                                       ? RecipeApi.addRecipe(
                                       context: context,
                                       recipeName: recipeController
-                                          .recipeNameController.text,
-                                      recipeImage: recipeController
-                                          .profileImage.value!,
+                                          .recipeNameController.text.trim(),
+                                      recipeImage: recipeImageFile,
                                       cookingTime: recipeController
-                                          .cookingTimeController.text,
+                                          .cookingTimeController.text.trim(),
                                       description: recipeController
-                                          .descriptionController.text,
+                                          .descriptionController.text.trim(),
                                       ingredients: recipeController
                                           .ingredientsList,
                                       steps: recipeController.stepsList,
@@ -525,13 +524,12 @@ class _AddNewRecipeState extends State<AddNewRecipe> {
                                       : RecipeApi.editRecipe(
                                       context: context,
                                       recipeName: recipeController
-                                          .recipeNameController.text,
-                                      recipeImage: recipeController
-                                          .profileImage.value!,
+                                          .recipeNameController.text.trim(),
+                                      recipeImage: recipeImageFile,
                                       cookingTime: recipeController
-                                          .cookingTimeController.text,
+                                          .cookingTimeController.text.trim(),
                                       description: recipeController
-                                          .descriptionController.text,
+                                          .descriptionController.text.trim(),
                                       ingredients: recipeController
                                           .ingredientsList,
                                       steps: recipeController.stepsList,

@@ -495,6 +495,8 @@ class AppStrings {
   static const String pleaseEnterCprExpireDate = 'Please enter cpr expire date';
   static const String pleaseEnterJobType = 'Please enter job type';
   static const String profileImageIsRequired = "Profile image is required";
+  static const String pleaseFillAllRequiredFields =
+      "Please fill in all required fields";
   static const String employeeAddress = "Employee Address";
   static const String employeeCPR = "Employee CPR";
   static const String employeePassport = "Employee Passport";

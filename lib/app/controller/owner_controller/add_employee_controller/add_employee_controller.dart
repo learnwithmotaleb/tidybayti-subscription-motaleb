@@ -149,15 +149,25 @@ class AddEmployeeController extends GetxController {
   addEmployeeFieldClear() {
     firstNameController.clear();
     lastNameController.clear();
+    emailController.clear();
+    passwordController.clear();
+    designationController.clear();
+    addressController.clear();
     phoneNumberController.clear();
     jobTypeController.clear();
+    selectedJobType.value = '';
     cprNumberController.clear();
     cprExpireDateController.clear();
     passportController.clear();
-    startTimeController.clear();
-    endTimeController.clear();
     passportExpireDateController.clear();
     noteController.clear();
+    startTimeController.clear();
+    endTimeController.clear();
+    breakStartTimeController.clear();
+    breakEndTimeController.clear();
+    profileImage.value = null;
+    selectedWorkingDays = [true, false, true, true, true, true, true];
+    selectedOffDayIndex = 1;
   }
 
   RxString image = "".obs;

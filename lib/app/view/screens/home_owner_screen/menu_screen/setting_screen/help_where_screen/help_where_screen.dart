@@ -16,7 +16,7 @@ class HelpWhereScreen extends StatefulWidget {
 }
 
 class _HelpWhereScreenState extends State<HelpWhereScreen> {
-  final String supportEmail = "support@tidybayte.com";
+  final String supportEmail = "support@tidybayti.com";
 
   final String videoUrl =
       // "https://drive.google.com/file/d/16bH3EjyFfNlWjYrc-GOJDy1wJKITbCOo/preview";
