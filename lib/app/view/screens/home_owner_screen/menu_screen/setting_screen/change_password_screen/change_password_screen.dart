@@ -119,11 +119,11 @@ class ChangePasswordScreen extends StatelessWidget {
                                   settingController.confirmPasswordController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return AppStrings.fieldCantBeEmpty;
+                                  return AppStrings.fieldCantBeEmpty.tr;
                                 } else if (value !=
                                     settingController
                                         .newPasswordController.text) {
-                                  return AppStrings.passwordShouldMatch;
+                                  return AppStrings.passwordShouldMatch.tr;
                                 } else if (value ==
                                     settingController
                                         .oldPasswordController.text) {

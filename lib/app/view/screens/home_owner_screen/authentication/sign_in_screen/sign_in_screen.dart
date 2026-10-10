@@ -70,10 +70,10 @@ class _SignInScreenState extends State<SignInScreen> {
                             authController.emailController,
                             validator: (value) {
                               if (value!.isEmpty) {
-                                return AppStrings.enterValidEmail;
+                                return AppStrings.enterValidEmail.tr;
                               } else if (!AppStrings.emailRegexp.hasMatch(
                                   authController.emailController.text)) {
-                                return AppStrings.enterValidEmail;
+                                return AppStrings.enterValidEmail.tr;
                               } else {
                                 return null;
                               }
