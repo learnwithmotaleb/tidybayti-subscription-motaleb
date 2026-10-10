@@ -60,10 +60,10 @@ class ForgotPasswordScreen extends StatelessWidget {
                             authController.emailController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return AppStrings.enterValidEmail;
+                                return AppStrings.enterValidEmail.tr;
                               } else if (!AppStrings.emailRegexp
                                   .hasMatch(value)) {
-                                return AppStrings.enterValidEmail;
+                                return AppStrings.enterValidEmail.tr;
                               }
                               return null;
                             },

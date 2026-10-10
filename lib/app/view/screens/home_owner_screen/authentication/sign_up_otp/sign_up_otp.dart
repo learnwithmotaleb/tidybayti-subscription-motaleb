@@ -127,7 +127,7 @@ class _SignUpOtpState extends State<SignUpOtp> {
                             textEditingController: authController.otpController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return AppStrings.fieldCantBeEmpty;
+                                return AppStrings.fieldCantBeEmpty.tr;
                               }
                               return null;
                             },

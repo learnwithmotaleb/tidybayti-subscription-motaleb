@@ -547,8 +547,20 @@ Map<String, String> english = {
   AppStrings.saveFavoriteRecipes: "Save and organize your favorite recipes",
   AppStrings.sevenDayFree: "7-day free trial",
   AppStrings.tapUploadImage: "Tap to upload profile image *",
+  "Manage Employees": "Manage Employees",
+  "Choose Your House": "Choose Your House",
+  "Beach House": "Beach House",
+  "My House": "My House",
+  "No Name": "No Name",
+  "No Internet": "No Internet",
+  "No Employee Found": "No Employee Found",
 
-
-
-
+  "Name": "Name",
+  "Email is required": "Email is required",
+  "Password is required": "Password is required",
+  "Field can't be empty": "Field can't be empty",
+  "Enter a valid email": "Enter a valid email",
+  "Enter a valid name": "Enter a valid name",
+  "Password must be at least 8 characters long and at least one uppercase letter, one lowercase letter, one number":
+      "Password must be at least 8 characters long and at least one uppercase letter, one lowercase letter, one number",
 };

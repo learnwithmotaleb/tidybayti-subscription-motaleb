@@ -129,16 +129,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:tidybayte/app/controller/language_controller/langauge_controller.dart';
-import 'package:tidybayte/app/core/app_routes/app_routes.dart';
 import 'package:tidybayte/app/global/helper/responsive_helper.dart';
 import 'package:tidybayte/app/utils/app_colors/app_colors.dart';
-import 'package:tidybayte/app/utils/app_icons/app_icons.dart';
 import 'package:tidybayte/app/utils/app_images/app_images.dart';
 import 'package:tidybayte/app/utils/app_strings/app_strings.dart';
-import 'package:tidybayte/app/view/components/custom_appbar/custom_appbar.dart';
 import 'package:tidybayte/app/view/components/custom_button/custom_button.dart';
 import 'package:tidybayte/app/view/components/custom_text/custom_text.dart';
-import 'package:tidybayte/app/view/components/custom_text_field/custom_text_field.dart';
 
 class LanguageScreen extends StatelessWidget {
   LanguageScreen({super.key});
@@ -216,13 +212,11 @@ class LanguageScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 58.h),
                   Padding(
-                    padding:  EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
                     child: CustomButton(
                       width: double.infinity,
                       onTap: () {
-                        Get.toNamed(AppRoutes.getStartedScreen,
-
-                        );
+                        Get.back();
                       },
                       fillColor: AppColors.buttonRed,
                       title: AppStrings.submit.tr,

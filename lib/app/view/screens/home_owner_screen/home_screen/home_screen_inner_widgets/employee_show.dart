@@ -6,6 +6,7 @@ import 'package:tidybayte/app/global/helper/image_handdaler/image_handler.dart';
 import 'package:tidybayte/app/global/helper/responsive_helper.dart';
 import 'package:tidybayte/app/utils/app_colors/app_colors.dart';
 import 'package:tidybayte/app/utils/app_const/app_const.dart';
+import 'package:tidybayte/app/utils/app_strings/app_strings.dart';
 import 'package:tidybayte/app/view/components/custom_loader/custom_loader.dart';
 import 'package:tidybayte/app/view/components/custom_netwrok_image/custom_network_image.dart';
 import 'package:tidybayte/app/view/components/custom_text/custom_text.dart';
@@ -35,7 +36,7 @@ class EmployeeShow extends StatelessWidget {
               top: ResponsiveHelper.spacing(25),
               fontWeight: FontWeight.w500,
               fontSize: ResponsiveHelper.fontSize(16),
-              text: 'No Internet',
+              text: AppStrings.noInternet.tr,
               color: Colors.black,
             ),
           );
@@ -49,7 +50,7 @@ class EmployeeShow extends StatelessWidget {
               top: ResponsiveHelper.spacing(20),
               fontWeight: FontWeight.w500,
               fontSize: ResponsiveHelper.fontSize(16),
-              text: 'Try Again',
+              text: AppStrings.tryAgain.tr,
               color: Colors.black,
             ),
           );
@@ -63,7 +64,7 @@ class EmployeeShow extends StatelessWidget {
                   vertical: ResponsiveHelper.spacing(50)),
               child: Center(
                 child: CustomText(
-                  text: "No Employee Found",
+                  text: AppStrings.noEmployeesFound.tr,
                   fontWeight: FontWeight.w500,
                   color: Colors.black,
                   fontSize: ResponsiveHelper.fontSize(16),

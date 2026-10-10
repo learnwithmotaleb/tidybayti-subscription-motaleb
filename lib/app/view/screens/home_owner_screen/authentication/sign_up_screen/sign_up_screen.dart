@@ -83,9 +83,9 @@ class SignUpScreen extends StatelessWidget {
                           authController.firstNameController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return AppStrings.fieldCantBeEmpty;
+                              return AppStrings.fieldCantBeEmpty.tr;
                             } else if (value.length < 3) {
-                              return AppStrings.enterAValidName;
+                              return AppStrings.enterAValidName.tr;
                             }
                             return null;
                           },
@@ -99,9 +99,9 @@ class SignUpScreen extends StatelessWidget {
                           authController.lastNameController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return AppStrings.fieldCantBeEmpty;
+                              return AppStrings.fieldCantBeEmpty.tr;
                             } else if (value.length < 3) {
-                              return AppStrings.enterAValidName;
+                              return AppStrings.enterAValidName.tr;
                             }
                             return null;
                           },
@@ -119,7 +119,7 @@ class SignUpScreen extends StatelessWidget {
                             if (value == null || value.trim().isEmpty) {
                               return null; // optional — empty is valid
                             } else if (value.trim().length < 6) {
-                              return "Enter a valid phone number";
+                              return AppStrings.pleaseEnterValidPhoneNumber.tr;
                             }
                             return null;
                           },
@@ -133,10 +133,10 @@ class SignUpScreen extends StatelessWidget {
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return AppStrings.enterValidEmail;
+                              return AppStrings.enterValidEmail.tr;
                             } else if (!AppStrings.emailRegexp
                                 .hasMatch(value)) {
-                              return AppStrings.enterValidEmail;
+                              return AppStrings.enterValidEmail.tr;
                             }
                             return null;
                           },
@@ -151,10 +151,10 @@ class SignUpScreen extends StatelessWidget {
                           authController.passwordController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return AppStrings.passwordMustHaveEightWith;
+                              return AppStrings.passwordMustHaveEightWith.tr;
                             } else if (value.length < 8 ||
                                 !AppStrings.passRegexp.hasMatch(value)) {
-                              return AppStrings.passwordLengthAndContain;
+                              return AppStrings.passwordLengthAndContain.tr;
                             }
                             return null;
                           },
@@ -169,10 +169,10 @@ class SignUpScreen extends StatelessWidget {
                           authController.confirmPasswordController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return AppStrings.fieldCantBeEmpty;
+                              return AppStrings.fieldCantBeEmpty.tr;
                             } else if (value !=
                                 authController.passwordController.text) {
-                              return "Password should match";
+                              return AppStrings.passwordShouldMatch.tr;
                             }
                             return null;
                           },

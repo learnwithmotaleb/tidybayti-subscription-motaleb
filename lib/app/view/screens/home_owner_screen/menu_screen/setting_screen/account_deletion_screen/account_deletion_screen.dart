@@ -233,11 +233,11 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
                 fieldBorderRadius: ResponsiveHelper.borderRadius(8),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Email is required';
+                    return 'Email is required'.tr;
                   }
                   if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
                       .hasMatch(value.trim())) {
-                    return 'Enter a valid email';
+                    return 'Enter a valid email'.tr;
                   }
                   return null;
                 },
@@ -246,11 +246,11 @@ class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
               CustomTextField(
                 textEditingController: _passwordController,
                 isPassword: true,
-                hintText: 'Password',
+                hintText: 'Password'.tr,
                 fieldBorderRadius: ResponsiveHelper.borderRadius(8),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Password is required';
+                    return 'Password is required'.tr;
                   }
                   return null;
                 },

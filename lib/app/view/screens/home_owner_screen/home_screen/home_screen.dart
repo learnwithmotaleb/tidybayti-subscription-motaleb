@@ -109,7 +109,7 @@ class _HouseTypeScreenState extends State<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 CustomText(
-                                  text: AppStrings.chooseYourHouse,
+                                  text: AppStrings.chooseYourHouse.tr,
                                   fontWeight: FontWeight.w500,
                                   fontSize: ResponsiveHelper.fontSize(20),
                                   color: AppColors.black,
@@ -124,7 +124,7 @@ class _HouseTypeScreenState extends State<HomeScreen> {
                                   child: Row(
                                     children: [
                                       CustomText(
-                                        text: homeController.selectedHouseName.value,
+                                        text: homeController.selectedHouseName.value.tr,
                                         fontWeight: FontWeight.w500,
                                         fontSize: ResponsiveHelper.fontSize(20),
                                         color: AppColors.black,
@@ -544,7 +544,7 @@ class _HouseTypeScreenState extends State<HomeScreen> {
                                         MainAxisAlignment.spaceBetween,
                                         children: [
                                           CustomText(
-                                            text: house.name ?? "No Name",
+                                            text: (house.name ?? "No Name").tr,
                                             fontSize:
                                             ResponsiveHelper.fontSize(16),
                                             fontWeight: FontWeight.w500,
