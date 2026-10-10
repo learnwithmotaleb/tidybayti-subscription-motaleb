@@ -57,10 +57,10 @@ class ResetPasswordScreen extends StatelessWidget {
                             isPassword: true,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return AppStrings.passwordMustHaveEightWith;
+                                return AppStrings.passwordMustHaveEightWith.tr;
                               } else if (value.length < 8 ||
                                   !AppStrings.passRegexp.hasMatch(value)) {
-                                return AppStrings.passwordLengthAndContain;
+                                return AppStrings.passwordLengthAndContain.tr;
                               }
                               return null;
                             },
@@ -76,10 +76,10 @@ class ResetPasswordScreen extends StatelessWidget {
                             authController.confirmPasswordController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return AppStrings.fieldCantBeEmpty;
+                                return AppStrings.fieldCantBeEmpty.tr;
                               } else if (value !=
                                   authController.newPasswordController.text) {
-                                return "Password should match";
+                                return AppStrings.passwordShouldMatch.tr;
                               }
                               return null;
                             },
